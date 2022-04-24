@@ -132,6 +132,7 @@ const MOVE_NONE = "N"
 const MOVE_RIGHT = "R"
 const LAMBDA = ' '
 const HALT = "!"
+const HALT_OVERFLOW = "!C"
 
 const TAPE_CELL_SIZE = 40
 const LAMBDA_CELL = 'λ'
@@ -171,4 +172,12 @@ const TURING_STATES = [
     {name: 'POP-begin',  transitions: {'0': 'L', '1': 'L', '#': `#,R,${HALT}`, 's': `${HALT}`}},
 
     {name: 'PUSH', transitions: {'0': 'R', '1': 'R', '#': 'R', ' ': `#,R,${HALT}`}},
+
+    {name: "move-begin", transitions: {'0': 'L',   '1': 'L',   '%': `%,R,${HALT}`}},
+    {name: "INC",   transitions: {'0': 'R',              '1': 'R',      ' ': `,L,INC-1`}},
+    {name: "INC-1", transitions: {'0': '1,N,move-begin', '1': '0,L,',   '%': `%,R,${HALT_OVERFLOW}`}},
+
+    {name: "DEC",   transitions: {'0': 'R',              '1': 'R',           ' ': `,L,DEC-1`}},
+    {name: "DEC-1", transitions: {'0': '1,L,DEC-1', '1': '0,N,move-begin',   '%': `%,R,${HALT_OVERFLOW}`}},
+
 ]

@@ -50,6 +50,9 @@ TuringMachine.prototype.ParseCommand = function(state, currChar) {
     else if (args[0] == HALT) {
         nextState = HALT
     }
+    else if (args[0] == HALT_OVERFLOW) {
+        nextState = HALT_OVERFLOW
+    }
     else {
         move = args[0]
     }
@@ -58,7 +61,7 @@ TuringMachine.prototype.ParseCommand = function(state, currChar) {
 }
 
 TuringMachine.prototype.Step = function() {
-    if (this.state == HALT)
+    if (this.state == HALT || this.state == HALT_OVERFLOW)
         return false
 
     let currChar = this.tape.GetChar()
@@ -68,7 +71,7 @@ TuringMachine.prototype.Step = function() {
     this.tape.Move(command.move)
     this.state = command.nextState
 
-    return this.state != HALT
+    return this.state != HALT && this.state != HALT_OVERFLOW
 }
 
 TuringMachine.prototype.Run = function(state) {

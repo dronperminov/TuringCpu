@@ -98,18 +98,26 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
     let args = instruction.args
 
     if (instruction.type == LABEL_COMMAND) {
-        this.ProcessJump(instruction.command, instruction.args[0])
+        this.ProcessJump(command, instruction.args[0])
     }
-    else if (instruction.command == MOV_CMD.name) {
+    else if (command == MOV_CMD.name) {
         this.ProcessMov(args[0], args[1])
     }
-    else if (instruction.command == PUSH_CMD.name) {
+    else if (command == PUSH_CMD.name) {
         let value = this.GetArgumentValue(args[0])
         this.PushStack(value)
     }
-    else if (instruction.command == POP_CMD.name) {
+    else if (command == POP_CMD.name) {
         let value = this.PopStack()
         this.SetRegisterValue(args[0], value)
+    }
+    else if (command == INC_CMD.name || command == DEC_CMD.name) {
+        let value = this.GetRegisterValue(args[0])
+        this.turing.Run("MOVE-BEGIN")
+        this.turing.Run("MOVE-ALU")
+        this.turing.WriteWord(value)
+        let result = this.turing.Run(command)
+        this.SetRegisterValue(args[0], result)
     }
     else {
         this.fakeCpu.ProcessInstruction(instruction)
