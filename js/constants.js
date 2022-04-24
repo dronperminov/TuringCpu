@@ -126,3 +126,19 @@ function GetArgType(arg) {
 
     return UNKNOWN_TYPE
 }
+
+const MOVE_LEFT = "L"
+const MOVE_NONE = "N"
+const MOVE_RIGHT = "R"
+const LAMBDA = ''
+const HALT = "!"
+
+const TAPE_CELL_SIZE = 40
+const LAMBDA_CELL = 'λ'
+const LEFT_CELL = '‹'
+const RIGHT_CELL = '›'
+
+const BEGIN_CHAR = '^'
+const ALU_CHAR = '%'
+const MEMORY_CHAR = 'm'
+const STACK_CHAR = 's'

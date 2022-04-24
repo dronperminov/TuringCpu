@@ -38,6 +38,7 @@ TuringCpu.prototype.Reset = function() {
     this.Stop()
     this.SetRunButtonsState(true)
     this.HideAllLines()
+    this.InitTuring()
 
     this.fakeCpu = new FakeCpu(this.bitDepth, this.memoryCount)
     this.programIndex = 0
