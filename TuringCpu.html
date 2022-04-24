@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Симулятор CPU на машине Тьюринга</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="stylesheet" type="text/css" href="css/elements.css">
+    <link rel="stylesheet" type="text/css" href="css/code.css">
+</head>
+<body>
+    <div class="simulator">
+        <div class="controls">
+            <input type="submit" class="button" value="Запустить" id="run-btn">
+            <input type="submit" class="button" value="Шаг" id="step-btn">
+            <input type="submit" class="button" value="Сброс" id="reset-btn" >
+            <input type="submit" class="button" value="Компилировать" id="compile-btn">
+        </div>
+        <div class="code">
+            <div class="header">Программа на ассемблере</div>
+            <div class="code-area">
+            <div class="code-input-highlight" id="code-highlight-box"></div>
+            <textarea class="code-input" id="code-editable-box">
+INC A
+DEC B</textarea>
+            </div>
+        </div>
+        <div class="left-footer">
+            <label><input type="checkbox" id="step-by-instructions-box">Шагать по инструкциям</label>
+        </div>
+
+        <div class="right-header"></div>
+        <div class="view">
+            <div class="machine" id="machine-box"></div>
+        </div>
+        <div class="right-footer"></div>
+    </div>
+
+    <script src="js/constants.js"></script>
+    <script src="js/highlight_input.js"></script>
+    <script src="js/turing_cpu.js"></script>
+    <script>
+        let cpu = new TuringCpu()
+    </script>
+</body>
+</html>

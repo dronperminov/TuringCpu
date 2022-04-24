@@ -1,0 +1,61 @@
+body, head {
+    margin: 0;
+    padding: 0;
+}
+
+.simulator * {
+    box-sizing: border-box;
+}
+
+.simulator {
+    font-family: Ubuntu;
+    font-size: 16px;
+
+    display: grid;
+    width: 100%;
+    height: 100vh;
+
+    grid-template-columns: max(540px, 30%) auto;
+    grid-template-rows: 50px auto 30px;
+
+    grid-template-areas:
+    "left-header right-header"
+    "code view"
+    "left-footer right-footer";
+}
+
+.controls {
+    grid-area: left-header;
+    background: #eee;
+    padding: 5px;
+}
+
+.left-footer {
+    grid-area: left-footer;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+}
+
+.footer-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.footer-cell a {
+    color: #2196f3;
+}
+
+.right-header {
+    grid-area: right-header;
+}
+
+.right-footer {
+    grid-area: right-footer;
+    background: #ddd;
+}
+
+.view {
+    grid-area: view;
+    padding: 0 5px;
+}

@@ -1,0 +1,86 @@
+.code {
+    grid-area: code;
+    height: 100%;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid #000;
+}
+
+.code .header {
+    padding: 10px 5px;
+    background: #b3e7ff;
+    border-radius: 5px 5px 0 0;
+    border-bottom: 1px solid #000;
+}
+
+.code-area {
+    width: 100%;
+    height: calc(100% - 40px);
+    position: relative;
+    overflow: auto;
+}
+
+.code-input {
+    resize: none;
+    border: none;
+    outline: none;
+
+    position: relative;
+    color: transparent;
+    background: transparent;
+    caret-color: black;
+}
+
+.code-input-highlight {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    user-select: none;
+}
+
+.code-input, .code-input-highlight {
+    width: 100%;
+    height: 100%;
+    white-space: pre;
+    padding: 5px;
+    display: table;
+    font-family: Consolas;
+    font-size: 16px;
+}
+
+.code-line {
+    font-family: Consolas;
+}
+
+.active-line {
+    background: #defee6;
+}
+
+.error-line {
+    background: #ffcccc;
+}
+
+.comment-code {
+    color: #aaa;
+}
+
+.number-code {
+    color: #00bcd4;
+}
+
+.label-code {
+    color: #ff9800;
+}
+
+.jump-code {
+    color: #4caf50;
+}
+
+.command-code {
+    color: #2196f3;
+}
+
+.register-code {
+    color: #9c27b0;
+}

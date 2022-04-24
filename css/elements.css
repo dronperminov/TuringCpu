@@ -1,0 +1,22 @@
+.button {
+    background: #fff;
+    padding: 7px 10px;
+    border: 2px solid #2196f3;
+    border-radius: 5px;
+    color: #2196f3;
+
+    font-family: Ubuntu;
+    font-size: 16px;
+}
+
+.button:hover {
+    background: #b3e7ff;
+    cursor: pointer;
+}
+
+input[disabled].button {
+    background: #ddd;
+    color: #888;
+    border-color: #888;
+    cursor: default;
+}
