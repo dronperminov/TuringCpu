@@ -1,0 +1,48 @@
+.machine {
+    margin-bottom: 10px;
+}
+
+.turing-tape {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 5px;
+}
+
+.turing-tape-row {
+    display: table-row;
+}
+
+.turing-tape-cell {
+    display: table-cell;
+    font-family: Consolas;
+    font-size: 18px;
+    text-align: center;
+    border: 1px solid #888;
+    vertical-align: middle;
+    height: 40px;
+}
+
+.turing-tape-lambda-cell {
+    color: #ddd;
+}
+
+.turing-tape-light-cell {
+    background: #eee;
+}
+
+.turing-tape-digit-cell {
+    color: #2500ff;
+}
+
+.turing-tape-current-cell {
+    background: #b3e7ff;
+}
+
+.turing-tape-system-cell {
+    background: #ffc107;
+}
+
+.turing-tape-register-cell {
+    background: #a9adeb;
+}

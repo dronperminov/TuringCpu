@@ -130,7 +130,7 @@ function GetArgType(arg) {
 const MOVE_LEFT = "L"
 const MOVE_NONE = "N"
 const MOVE_RIGHT = "R"
-const LAMBDA = ''
+const LAMBDA = ' '
 const HALT = "!"
 
 const TAPE_CELL_SIZE = 40

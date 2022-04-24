@@ -90,4 +90,5 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
     }
 
     this.fakeCpu.UpdateInfo()
+    this.turing.ToHTML()
 }

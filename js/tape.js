@@ -73,3 +73,19 @@ Tape.prototype.Clear = function() {
     this.positive = [LAMBDA]
     this.index = 0
 }
+
+Tape.prototype.GetBorders = function() {
+    let left = this.positive.length
+    let right = 1 - this.negative.length
+    let haveChars = false
+
+    for (let i = -this.negative.length; i < this.positive.length; i++) {
+        if (this.GetCharAt(i) != LAMBDA) {
+            left = Math.min(left, i)
+            right = Math.max(right, i)
+            haveChars = true
+        }
+    }
+
+    return haveChars ? {left: left, right: right} : {left: this.index, right: this.index }
+}

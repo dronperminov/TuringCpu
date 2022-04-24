@@ -72,3 +72,59 @@ TuringMachine.prototype.Run = function(state) {
 
     return this.GetWord()
 }
+
+TuringMachine.prototype.MakeTapeCell = function(index) {
+    let cell = document.createElement('div')
+    cell.className = 'turing-tape-cell'
+
+    let char = this.tape.GetCharAt(index)
+
+    if (this.tape.index == index) {
+        cell.classList.add('turing-tape-current-cell')
+    }
+    else if (char == LAMBDA) {
+        cell.classList.add('turing-tape-lambda-cell')
+    }
+    else if ([BEGIN_CHAR, ALU_CHAR, MEMORY_CHAR, STACK_CHAR].indexOf(char) > -1) {
+        cell.classList.add('turing-tape-system-cell')
+    }
+    else if (REGISTER_NAMES.indexOf(char) > -1) {
+        cell.classList.add('turing-tape-register-cell')
+    }
+    else if (char != '0' && char != '1') {
+        cell.classList.add('turing-tape-light-cell')
+    }
+
+    cell.innerHTML = (char == LAMBDA ? LAMBDA_CELL : char)
+    return cell
+}
+
+TuringMachine.prototype.MakeTapeHTML = function(div) {
+    let tapeDiv = document.createElement('div')
+    tapeDiv.className = 'turing-tape'
+
+    let borders = this.tape.GetBorders()
+    let cells = borders.right - borders.left + 1
+
+    let width = div.clientWidth
+    let columns = Math.floor(width / TAPE_CELL_SIZE)
+    let rows = Math.floor((cells + columns - 1) / columns)
+
+    for (let i = 0; i < rows; i++) {
+        let row = document.createElement('div')
+        row.className = 'turing-tape-row'
+
+        for (let j = 0; j < columns; j++)
+            row.appendChild(this.MakeTapeCell(i * columns + j))
+
+        tapeDiv.appendChild(row)
+    }
+
+    div.appendChild(tapeDiv)
+}
+
+TuringMachine.prototype.ToHTML = function(divId = 'machine-box') {
+    let div = document.getElementById(divId)
+    div.innerHTML = ''
+    this.MakeTapeHTML(div)
+}

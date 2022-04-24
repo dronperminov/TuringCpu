@@ -107,6 +107,7 @@ TuringCpu.prototype.InitTuring = function() {
 
     this.turing = new TuringMachine()
     this.turing.SetWord(word.join(''))
+    this.turing.ToHTML()
 
     this.InitTuringMoves(chars)
 }
