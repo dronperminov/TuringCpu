@@ -64,8 +64,11 @@ end:
     <script src="js/turing_cpu.js"></script>
     <script src="js/compile.js"></script>
     <script src="js/run.js"></script>
+    <script src="js/fake_cpu.js"></script>
     <script>
-        let cpu = new TuringCpu()
+        let bitDepth = 8
+        let memoryCount = 50
+        let cpu = new TuringCpu(bitDepth, memoryCount)
     </script>
 </body>
 </html>

@@ -4,8 +4,8 @@ function TuringCpu(bitDepth, memoryCount) {
     this.codeInput = new HighlightInput('code-editable-box', 'code-highlight-box', HIGHTLIGHT_RULES)
 
     this.InitControls()
-    this.Reset()
     this.Compile()
+    this.Reset()
     this.RunProcess()
 }
 
@@ -39,35 +39,7 @@ TuringCpu.prototype.SetRunButtonsState = function(enabled = true, withReset = fa
         this.SetButtonState(this.resetBtn, enabled)
 }
 
-TuringCpu.prototype.IsRegister = function(arg) {
-    return REGISTER_NAMES.indexOf(arg) > -1
-}
-
-TuringCpu.prototype.IsConstant = function(arg) {
-    return arg.match(new RegExp(`^${CONSTANT_REGEXP}$`, "g")) != null
-}
-
-TuringCpu.prototype.IsLabel = function(arg) {
-    return arg.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) != null
-}
-
-TuringCpu.prototype.IsAddress = function(arg) {
-    if (!arg.startsWith('[') || !arg.endsWith(']'))
-        return false
-
-    arg = arg.substr(1, arg.length - 2)
-    return this.IsRegister(arg) || this.IsConstant(arg)
-}
-
-TuringCpu.prototype.GetArgType = function(arg) {
-    if (this.IsRegister(arg))
-        return REGISTER_TYPE
-
-    if (this.IsConstant(arg))
-        return CONSTANT_TYPE
-
-    if (this.IsAddress(arg))
-        return ADDRESS_TYPE
-
-    return UNKNOWN_TYPE
+TuringCpu.prototype.HideAllLines = function() {
+    for (let instruction of this.program)
+        instruction.line.classList.remove('active-line')
 }

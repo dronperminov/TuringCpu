@@ -20,7 +20,7 @@ TuringCpu.prototype.GetCommand = function(cmd) {
 
 TuringCpu.prototype.ValidateArgs = function(command, args, lineDiv) {
     if (command.argTypes[0] == LABEL_TYPE) {
-        if (!this.IsLabel(args[0]))
+        if (!IsLabel(args[0]))
             this.CompileError(lineDiv, `Некорректная метка команды ${command.name}: ${args[0]}`)
 
         return
@@ -32,7 +32,7 @@ TuringCpu.prototype.ValidateArgs = function(command, args, lineDiv) {
         let isCorrectArgs = true
 
         for (let i = 0; i < command.args && isCorrectArgs; i++) {
-            let argType = this.GetArgType(args[i])
+            let argType = GetArgType(args[i])
 
             if (argType != validTypes[i])
                 isCorrectArgs = false
@@ -89,12 +89,12 @@ TuringCpu.prototype.ParseLine = function(line, lineDiv) {
 
     this.ValidateArgs(command, args, lineDiv)
 
-    this.program.push({ command: cmd, args: args, line: lineDiv })
+    this.program.push({ command: cmd, args: args, line: lineDiv, type: command.argTypes[0] == LABEL_TYPE ? LABEL_COMMAND : OTHER_COMMAND })
 }
 
 TuringCpu.prototype.ValidateLabels = function() {
     for (let instruction of this.program) {
-        if (this.GetCommand(instruction.command).argTypes[0] != LABEL_TYPE)
+        if (instruction.type != LABEL_COMMAND)
             continue
 
         let label = instruction.args[0]

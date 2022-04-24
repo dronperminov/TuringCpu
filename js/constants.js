@@ -10,6 +10,10 @@ const ADDRESS_TYPE = 'address'
 const LABEL_TYPE = 'label'
 const UNKNOWN_TYPE = 'unknown'
 
+const LABEL_COMMAND = 'label'
+const OTHER_COMMAND = 'other'
+
+
 const ARITHMETIC_ARGS = [
     [REGISTER_TYPE, REGISTER_TYPE],
     [REGISTER_TYPE, CONSTANT_TYPE],
@@ -41,8 +45,8 @@ const AND_CMD = { name: "AND", args: 2, argTypes: ARITHMETIC_ARGS }
 const OR_CMD = { name: "OR", args: 2, argTypes: ARITHMETIC_ARGS }
 const XOR_CMD = { name: "XOR", args: 2, argTypes: ARITHMETIC_ARGS }
 const NOT_CMD = { name: "NOT", args: 1, argTypes: [[REGISTER_TYPE]] }
-const SHL_CMD = { name: "SHL", args: 1, argTypes: ARITHMETIC_ARGS }
-const SHR_CMD = { name: "SHR", args: 1, argTypes: ARITHMETIC_ARGS }
+const SHL_CMD = { name: "SHL", args: 2, argTypes: ARITHMETIC_ARGS }
+const SHR_CMD = { name: "SHR", args: 2, argTypes: ARITHMETIC_ARGS }
 
 const JMP_CMD = {name: 'JMP', args: 1, argTypes: [[LABEL_TYPE]] }
 
@@ -89,3 +93,36 @@ const HIGHTLIGHT_RULES = [
     {regex: new RegExp(`\\b(${REGISTER_NAMES.join('|')})\\b`, "g"), name: "register-code"},
     {regex: new RegExp(`\\b(${COMMANDS.map((cmd) => cmd.name).join('|')})\\b`, "gi"), name: "command-code"}
 ]
+
+function IsRegister(arg) {
+    return REGISTER_NAMES.indexOf(arg) > -1
+}
+
+function IsConstant(arg) {
+    return arg.match(new RegExp(`^${CONSTANT_REGEXP}$`, "g")) != null
+}
+
+function IsAddress(arg) {
+    if (!arg.startsWith('[') || !arg.endsWith(']'))
+        return false
+
+    arg = arg.substr(1, arg.length - 2)
+    return IsRegister(arg) || IsConstant(arg)
+}
+
+function IsLabel(arg) {
+    return arg.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) != null
+}
+
+function GetArgType(arg) {
+    if (IsRegister(arg))
+        return REGISTER_TYPE
+
+    if (IsConstant(arg))
+        return CONSTANT_TYPE
+
+    if (IsAddress(arg))
+        return ADDRESS_TYPE
+
+    return UNKNOWN_TYPE
+}
