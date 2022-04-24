@@ -61,6 +61,8 @@ TuringCpu.prototype.InitTuringMemory = function() {
 
         for (let i = 0; i < this.bitDepth; i++)
             memory.push('0')
+
+        memory.push(LAMBDA)
     }
 
     return memory
@@ -100,16 +102,15 @@ TuringCpu.prototype.InitTuring = function() {
     let stack = [STACK_CHAR]
 
     let word = [BEGIN_CHAR].concat(alu).concat(registers).concat(memory).concat(stack)
-    let chars = new Set()
-
-    for (let c of word)
-        chars.add(c)
 
     this.turing = new TuringMachine()
     this.turing.SetWord(word.join(''))
     this.turing.ToHTML()
 
-    this.InitTuringMoves(chars)
+    this.InitTuringMoves(TURING_ALPHABET)
+
+    for (let state of TURING_STATES)
+        this.turing.AddState(state.name, state.transitions)
 }
 
 TuringCpu.prototype.SetButtonState = function(button, enabled) {
@@ -132,4 +133,82 @@ TuringCpu.prototype.SetRunButtonsState = function(enabled = true, withReset = fa
 TuringCpu.prototype.HideAllLines = function() {
     for (let instruction of this.program)
         instruction.line.classList.remove('active-line')
+}
+
+// TODO: step by step
+TuringCpu.prototype.GetRegisterValue = function(name) {
+    this.turing.Run("MOVE-BEGIN")
+    return this.turing.Run(`MOVE-REGISTER-${name}`)
+}
+
+// TODO: step by step
+TuringCpu.prototype.SetRegisterValue = function(name, value) {
+    this.turing.Run("MOVE-BEGIN")
+    this.turing.Run(`MOVE-REGISTER-${name}`)
+    this.turing.WriteWord(value)
+}
+
+// TODO: step by step
+TuringCpu.prototype.SetMemoryValue = function(address, value) {
+    this.turing.Run("MOVE-BEGIN")
+    this.turing.Run(`MOVE-MEMORY`)
+    this.turing.WriteWord(`${address}I`)
+    this.turing.Run("MEMORY-RUN")
+    this.turing.WriteWord(value)
+}
+
+// TODO: step by step
+TuringCpu.prototype.GetMemoryValue = function(address) {
+    this.turing.Run("MOVE-BEGIN")
+    this.turing.Run(`MOVE-MEMORY`)
+    this.turing.WriteWord(`${address}I`)
+    return this.turing.Run("MEMORY-RUN")
+}
+
+TuringCpu.prototype.ConstantToBits = function(value) {
+    if (value.startsWith('0b')) {
+        value = Number.parseInt(value.substr(2), 2)
+    }
+    else if (value.endsWith('b')) {
+        value = Number.parseInt(value.substr(0, value.length - 1), 2)
+    }
+    else if (value.startsWith('0o')) {
+        value = Number.parseInt(value.substr(2), 8)
+    }
+    else if (value.startsWith('0x')) {
+        value = Number.parseInt(value.substr(2), 16)
+    }
+    else if (value.endsWith('d')) {
+        value = Number.parseInt(value.substr(0, value.length - 1))
+    }
+    else {
+        value = Number.parseInt(value)
+    }
+
+    let bits = []
+
+    for (; bits.length != this.bitDepth; value >>= 1)
+        bits.push(value & 1)
+
+    return bits.reverse().join('')
+}
+
+TuringCpu.prototype.AddressToBits = function(arg) {
+    let address = arg.substr(1, arg.length - 2)
+
+    if (IsRegister(address))
+        return this.GetRegisterValue(address)
+
+    return this.ConstantToBits(address)
+}
+
+TuringCpu.prototype.GetArgumentValue = function(arg) {
+    if (IsRegister(arg))
+        return this.GetRegisterValue(arg)
+
+    if (IsConstant(arg))
+        return this.ConstantToBits(arg)
+
+    let address = this.AddressToBits(arg)
+    return this.GetMemoryValue(address)
 }

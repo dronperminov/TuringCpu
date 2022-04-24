@@ -77,13 +77,31 @@ TuringCpu.prototype.ProcessJump = function(jmp, label) {
     }
 }
 
+TuringCpu.prototype.ProcessMov = function(arg1, arg2) {
+    let value = this.GetArgumentValue(arg2)
+
+    if (IsAddress(arg1)) {
+        let address = this.AddressToBits(arg1)
+        this.SetMemoryValue(address, value)
+    }
+    else {
+        this.SetRegisterValue(arg1, value)
+    }
+}
+
 TuringCpu.prototype.ProcessInstruction = function(instruction) {
     console.log(instruction.command, instruction.args)
     this.HideAllLines()
     instruction.line.classList.add('active-line')
 
+    let command = instruction.command
+    let args = instruction.args
+
     if (instruction.type == LABEL_COMMAND) {
         this.ProcessJump(instruction.command, instruction.args[0])
+    }
+    else if (instruction.command == MOV_CMD.name) {
+        this.ProcessMov(args[0], args[1])
     }
     else {
         this.fakeCpu.ProcessInstruction(instruction)

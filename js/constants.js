@@ -142,3 +142,25 @@ const BEGIN_CHAR = '^'
 const ALU_CHAR = '%'
 const MEMORY_CHAR = 'm'
 const STACK_CHAR = 's'
+
+const TURING_ALPHABET = [
+    LAMBDA,
+    '0', '1',
+    'O', 'I', '#',
+    BEGIN_CHAR,
+    ALU_CHAR,
+    MEMORY_CHAR,
+    STACK_CHAR,
+    ...REGISTER_NAMES
+]
+
+const TURING_STATES = [
+    {name: "MEMORY-RUN",        transitions: {'0': 'R', '1': 'R', 'I': 'I,L,MEMORY-MOVE'}},
+    {name: "MEMORY-MOVE",       transitions: {'0': '1,L,MEMORY-MOVE-dec', '1': '0,R,MEMORY-MOVE-mark'}},
+    {name: "MEMORY-MOVE-mark",  transitions: {'0': "R", '1': "R", '#': 'O,L,MEMORY-MOVE-begin', 'I': "R", 'O': "R", ' ': "R"}},
+    {name: "MEMORY-MOVE-begin", transitions: {'0': "L", '1': "L", '#': "L", 'I': 'I,L,MEMORY-MOVE', 'O': "L", ' ': "L"}},
+
+    {name: "MEMORY-MOVE-dec",   transitions: {'0': '1,L,MEMORY-MOVE-dec', '1': '0,R,MEMORY-MOVE-mark', 'm': `${MEMORY_CHAR},R,MEMORY-MOVE-shift`}},
+    {name: "MEMORY-MOVE-shift", transitions: {'0': ',R,MEMORY-MOVE-shift', '1': ',R,MEMORY-MOVE-shift', 'I': ',R,MEMORY-MOVE-find'}},
+    {name: "MEMORY-MOVE-find",  transitions: {'0': "R", '1': "R", ' ': "R", '#': `#,R,${HALT}`, 'O': '#,R,MEMORY-MOVE-find'}},
+]

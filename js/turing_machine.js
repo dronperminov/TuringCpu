@@ -19,6 +19,10 @@ TuringMachine.prototype.GetWord = function(endChar = LAMBDA) {
     return this.tape.GetWord(endChar)
 }
 
+TuringMachine.prototype.WriteWord = function(word, dir = 1) {
+    this.tape.WriteWord(word, dir)
+}
+
 TuringMachine.prototype.Clear = function() {
     this.tape.Clear()
     this.state = HALT
@@ -30,6 +34,9 @@ TuringMachine.prototype.ParseCommand = function(state, currChar) {
     let nextChar = currChar
     let move = MOVE_NONE
     let nextState = state
+
+    if (args[0] == '')
+        args[0] = LAMBDA
 
     if (args.length == 3) {
         nextChar = args[0]
