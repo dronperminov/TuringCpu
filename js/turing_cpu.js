@@ -5,6 +5,7 @@ function TuringCpu(bitDepth, memoryCount) {
 
     this.InitControls()
     this.Reset()
+    this.Compile()
     this.RunProcess()
 }
 
@@ -21,40 +22,52 @@ TuringCpu.prototype.InitControls = function() {
     this.compileBtn.addEventListener('click', () => this.Compile())
 }
 
-TuringCpu.prototype.RunProcess = function() {
-    if (this.isRunning)
-        this.Step()
-
-    window.requestAnimationFrame(() => this.RunProcess())
-}
-
-TuringCpu.prototype.Run = function() {
-    if (this.isRunning) {
-        this.Stop()
+TuringCpu.prototype.SetButtonState = function(button, enabled) {
+    if (enabled) {
+        button.removeAttribute('disabled')
     }
     else {
-        this.Start()
+        button.setAttribute('disabled', '')
     }
 }
 
-TuringCpu.prototype.Start = function() {
-    this.isRunning = true
-    this.runBtn.value = 'Остановить'
+TuringCpu.prototype.SetRunButtonsState = function(enabled = true, withReset = false) {
+    this.SetButtonState(this.runBtn, enabled)
+    this.SetButtonState(this.stepBtn, enabled)
+
+    if (withReset)
+        this.SetButtonState(this.resetBtn, enabled)
 }
 
-TuringCpu.prototype.Stop = function() {
-    this.isRunning = false
-    this.runBtn.value = 'Запустить'
+TuringCpu.prototype.IsRegister = function(arg) {
+    return REGISTER_NAMES.indexOf(arg) > -1
 }
 
-TuringCpu.prototype.Step = function() {
-
+TuringCpu.prototype.IsConstant = function(arg) {
+    return arg.match(new RegExp(`^${CONSTANT_REGEXP}$`, "g")) != null
 }
 
-TuringCpu.prototype.Reset = function() {
-    this.Stop()
+TuringCpu.prototype.IsLabel = function(arg) {
+    return arg.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) != null
 }
 
-TuringCpu.prototype.Compile = function() {
+TuringCpu.prototype.IsAddress = function(arg) {
+    if (!arg.startsWith('[') || !arg.endsWith(']'))
+        return false
 
+    arg = arg.substr(1, arg.length - 2)
+    return this.IsRegister(arg) || this.IsConstant(arg)
+}
+
+TuringCpu.prototype.GetArgType = function(arg) {
+    if (this.IsRegister(arg))
+        return REGISTER_TYPE
+
+    if (this.IsConstant(arg))
+        return CONSTANT_TYPE
+
+    if (this.IsAddress(arg))
+        return ADDRESS_TYPE
+
+    return UNKNOWN_TYPE
 }

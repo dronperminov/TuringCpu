@@ -21,8 +21,31 @@
             <div class="code-area">
             <div class="code-input-highlight" id="code-highlight-box"></div>
             <textarea class="code-input" id="code-editable-box">
-INC A
-DEC B</textarea>
+; Симулятор процессора на машине Тьюринга
+; https://github.com/dronperminov/TuringCpu
+; Пример вычисления числа Фибоначчи по номеру в регистре A
+
+JMP start
+
+.loop:
+    PUSH B ; сохраняем предыдущий член последовательности
+    ADD B, C ; вычисляем новый
+    POP C ; возвращаем сохранённый на место предыдущего
+    DEC A   ; уменьшаем номер
+    JNZ .loop
+
+    JMP end
+
+start:
+    MOV A, 11  ; номер числа Фибоначчи
+    MOV C, 0x1
+    CMP A, 12
+    CMP A, 11
+    CMP A, 10
+    JMP .loop
+
+end:
+    XOR A, B</textarea>
             </div>
         </div>
         <div class="left-footer">
@@ -39,6 +62,8 @@ DEC B</textarea>
     <script src="js/constants.js"></script>
     <script src="js/highlight_input.js"></script>
     <script src="js/turing_cpu.js"></script>
+    <script src="js/compile.js"></script>
+    <script src="js/run.js"></script>
     <script>
         let cpu = new TuringCpu()
     </script>
