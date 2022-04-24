@@ -72,7 +72,9 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
     let moves = [
         {name: 'MOVE-ALU', char: ALU_CHAR },
         {name: 'MOVE-MEMORY', char: MEMORY_CHAR },
-        {name: 'MOVE-STACK', char: STACK_CHAR }
+        {name: 'MOVE-STACK', char: STACK_CHAR },
+        {name: 'MOVE-ZERO-FLAG', char: ZERO_FLAG_CHAR},
+        {name: 'MOVE-CARRY-FLAG', char: CARRY_FLAG_CHAR}
     ]
 
     for (let register of REGISTER_NAMES)
@@ -97,11 +99,12 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
 
 TuringCpu.prototype.InitTuring = function() {
     let alu = this.InitTuringALU()
+    let flags = [ZERO_FLAG_CHAR, '1', LAMBDA, CARRY_FLAG_CHAR, '0', LAMBDA]
     let registers = this.InitTuringRegisters()
     let memory = this.InitTuringMemory()
     let stack = [STACK_CHAR]
 
-    let word = [BEGIN_CHAR].concat(alu).concat(registers).concat(memory).concat(stack)
+    let word = [BEGIN_CHAR].concat(alu).concat(flags).concat(registers).concat(memory).concat(stack)
 
     this.turing = new TuringMachine()
     this.turing.SetWord(word.join(''))

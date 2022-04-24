@@ -46,3 +46,7 @@
 .turing-tape-register-cell {
     background: #a9adeb;
 }
+
+.turing-tape-flag-cell {
+    background: #a9ebb6;
+}

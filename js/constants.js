@@ -141,6 +141,8 @@ const RIGHT_CELL = '›'
 
 const BEGIN_CHAR = '^'
 const ALU_CHAR = '%'
+const ZERO_FLAG_CHAR = 'z'
+const CARRY_FLAG_CHAR = 'c'
 const MEMORY_CHAR = 'm'
 const STACK_CHAR = 's'
 
@@ -150,6 +152,7 @@ const TURING_ALPHABET = [
     'O', 'I', '#',
     BEGIN_CHAR,
     ALU_CHAR,
+    ZERO_FLAG_CHAR, CARRY_FLAG_CHAR,
     MEMORY_CHAR,
     STACK_CHAR,
     ...REGISTER_NAMES
@@ -173,11 +176,24 @@ const TURING_STATES = [
 
     {name: 'PUSH', transitions: {'0': 'R', '1': 'R', '#': 'R', ' ': `#,R,${HALT}`}},
 
-    {name: "move-begin", transitions: {'0': 'L',   '1': 'L',   '%': `%,R,${HALT}`}},
+    {name: "move-begin", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', '%': '%,R,check-zero'}},
+    {name: "return-to-alu", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', '%': `%,R,${HALT}`}},
+
+    {name: "write-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'z': 'R', 'c': 'c,R,write-carry-begin'}},
+    {name: "write-no-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'z': 'R', 'c': 'c,R,write-no-carry-begin'}},
+    {name: "write-carry-begin", transitions: {'0': '1,L,move-begin', '1': '1,L,move-begin', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
+    {name: "write-no-carry-begin", transitions: {'0': '0,L,move-begin', '1': '0,L,move-begin', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
+
+    {name: "write-zero", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'c': 'R', 'z': 'z,R,write-zero-begin'}},
+    {name: "write-no-zero", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'c': 'R', 'z': 'z,R,write-no-zero-begin'}},
+    {name: "write-zero-begin", transitions: {'0': '1,L,return-to-alu', '1': '1,L,return-to-alu', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
+    {name: "write-no-zero-begin", transitions: {'0': '0,L,return-to-alu', '1': '0,L,return-to-alu', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
+
+    {name: "check-zero", transitions: {'0': 'R', '1': '1,R,write-no-zero', ' ': ',N,write-zero'}},
+
     {name: "INC",   transitions: {'0': 'R',              '1': 'R',      ' ': `,L,INC-1`}},
-    {name: "INC-1", transitions: {'0': '1,N,move-begin', '1': '0,L,',   '%': `%,R,${HALT_OVERFLOW}`}},
+    {name: "INC-1", transitions: {'0': '1,N,write-no-carry', '1': '0,L,',   '%': `%,R,write-carry`}},
 
     {name: "DEC",   transitions: {'0': 'R',              '1': 'R',           ' ': `,L,DEC-1`}},
-    {name: "DEC-1", transitions: {'0': '1,L,DEC-1', '1': '0,N,move-begin',   '%': `%,R,${HALT_OVERFLOW}`}},
-
+    {name: "DEC-1", transitions: {'0': '1,L,DEC-1', '1': '0,N,write-no-carry',   '%': `%,R,write-carry`}},
 ]

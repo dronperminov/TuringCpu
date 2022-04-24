@@ -101,6 +101,9 @@ TuringMachine.prototype.MakeTapeCell = function(index) {
     else if (REGISTER_NAMES.indexOf(char) > -1) {
         cell.classList.add('turing-tape-register-cell')
     }
+    else if (char == ZERO_FLAG_CHAR || char == CARRY_FLAG_CHAR) {
+        cell.classList.add('turing-tape-flag-cell')
+    }
     else if (char != '0' && char != '1') {
         cell.classList.add('turing-tape-light-cell')
     }
