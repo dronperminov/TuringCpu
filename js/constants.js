@@ -159,8 +159,16 @@ const TURING_STATES = [
     {name: "MEMORY-MOVE",       transitions: {'0': '1,L,MEMORY-MOVE-dec', '1': '0,R,MEMORY-MOVE-mark'}},
     {name: "MEMORY-MOVE-mark",  transitions: {'0': "R", '1': "R", '#': 'O,L,MEMORY-MOVE-begin', 'I': "R", 'O': "R", ' ': "R"}},
     {name: "MEMORY-MOVE-begin", transitions: {'0': "L", '1': "L", '#': "L", 'I': 'I,L,MEMORY-MOVE', 'O': "L", ' ': "L"}},
-
     {name: "MEMORY-MOVE-dec",   transitions: {'0': '1,L,MEMORY-MOVE-dec', '1': '0,R,MEMORY-MOVE-mark', 'm': `${MEMORY_CHAR},R,MEMORY-MOVE-shift`}},
     {name: "MEMORY-MOVE-shift", transitions: {'0': ',R,MEMORY-MOVE-shift', '1': ',R,MEMORY-MOVE-shift', 'I': ',R,MEMORY-MOVE-find'}},
     {name: "MEMORY-MOVE-find",  transitions: {'0': "R", '1': "R", ' ': "R", '#': `#,R,${HALT}`, 'O': '#,R,MEMORY-MOVE-find'}},
+
+    {name: 'POP-init', transitions: {'0': "R", '1': "R", '#': "R", ' ': ',L,POP-#'}},
+    {name: 'POP-#', transitions: {'0': "L", '1': "L", '#': `#,R,${HALT}`, 's': `s,R,${HALT}`}},
+    {name: 'POP',        transitions: {'0': '0,N,POP-clear', '1': '1,N,POP-clear', ' ': `,N,${HALT}`}},
+    {name: 'POP-clear',  transitions: {'0': ',R,POP-clear', '1': ',R,POP-clear', ' ': ',L,POP-move'}},
+    {name: 'POP-move',   transitions: {'#': `,L,POP-begin`, ' ': 'L'}},
+    {name: 'POP-begin',  transitions: {'0': 'L', '1': 'L', '#': `#,R,${HALT}`, 's': `${HALT}`}},
+
+    {name: 'PUSH', transitions: {'0': 'R', '1': 'R', '#': 'R', ' ': `#,R,${HALT}`}},
 ]

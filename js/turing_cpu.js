@@ -165,6 +165,24 @@ TuringCpu.prototype.GetMemoryValue = function(address) {
     return this.turing.Run("MEMORY-RUN")
 }
 
+// TODO: step by step
+TuringCpu.prototype.PushStack = function(value) {
+    this.turing.Run("MOVE-BEGIN")
+    this.turing.Run("MOVE-STACK")
+    this.turing.Run("PUSH")
+    this.turing.WriteWord(value)
+}
+
+// TODO: step by step
+TuringCpu.prototype.PopStack = function() {
+    this.turing.Run("MOVE-BEGIN")
+    this.turing.Run("MOVE-STACK")
+    this.turing.Run("POP-init")
+    let value = this.turing.GetWord()
+    this.turing.Run("POP")
+    return value
+}
+
 TuringCpu.prototype.ConstantToBits = function(value) {
     if (value.startsWith('0b')) {
         value = Number.parseInt(value.substr(2), 2)

@@ -103,6 +103,14 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
     else if (instruction.command == MOV_CMD.name) {
         this.ProcessMov(args[0], args[1])
     }
+    else if (instruction.command == PUSH_CMD.name) {
+        let value = this.GetArgumentValue(args[0])
+        this.PushStack(value)
+    }
+    else if (instruction.command == POP_CMD.name) {
+        let value = this.PopStack()
+        this.SetRegisterValue(args[0], value)
+    }
     else {
         this.fakeCpu.ProcessInstruction(instruction)
     }
