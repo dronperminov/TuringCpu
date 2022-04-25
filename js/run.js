@@ -40,7 +40,6 @@ TuringCpu.prototype.Reset = function() {
     this.HideAllLines()
     this.InitTuring()
 
-    this.fakeCpu = new FakeCpu(this.bitDepth, this.memoryCount)
     this.programIndex = 0
 }
 
@@ -137,9 +136,8 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         this.turing.Run(SUB_CMD.name)
     }
     else {
-        this.fakeCpu.ProcessInstruction(instruction)
+        throw `Unknown command "${instruction.command}"`
     }
 
-    this.fakeCpu.UpdateInfo()
     this.turing.ToHTML()
 }
