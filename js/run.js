@@ -49,27 +49,27 @@ TuringCpu.prototype.ProcessJump = function(jmp, label) {
         this.programIndex = this.labels[label]
     }
     else if (jmp == JZ_CMD.name || jmp == JE_CMD.name) {
-        if (this.fakeCpu.GetFlag(ZERO_FLAG))
+        if (this.GetFlag(ZERO_FLAG))
             this.programIndex = this.labels[label]
     }
     else if (jmp == JNZ_CMD.name || jmp == JNE_CMD.name) {
-        if (!this.fakeCpu.GetFlag(ZERO_FLAG))
+        if (!this.GetFlag(ZERO_FLAG))
             this.programIndex = this.labels[label]
     }
     else if (jmp == JC_CMD.name || jmp == JB_CMD.name || jmp == JNAE_CMD.name) {
-        if (this.fakeCpu.GetFlag(CARRY_FLAG))
+        if (this.GetFlag(CARRY_FLAG))
             this.programIndex = this.labels[label]
     }
     else if (jmp == JNC_CMD.name || jmp == JAE_CMD.name || jmp == JNB_CMD.name) {
-        if (!this.fakeCpu.GetFlag(CARRY_FLAG))
+        if (!this.GetFlag(CARRY_FLAG))
             this.programIndex = this.labels[label]
     }
     else if (jmp == JA_CMD.name || jmp == JNBE_CMD.name) {
-        if (!this.fakeCpu.GetFlag(ZERO_FLAG) && !this.fakeCpu.GetFlag(CARRY_FLAG))
+        if (!this.GetFlag(ZERO_FLAG) && !this.GetFlag(CARRY_FLAG))
             this.programIndex = this.labels[label]
     }
     else if (jmp == JBE_CMD.name || jmp == JNA_CMD.name) {
-        if (this.fakeCpu.GetFlag(ZERO_FLAG) || this.fakeCpu.GetFlag(CARRY_FLAG))
+        if (this.GetFlag(ZERO_FLAG) || this.GetFlag(CARRY_FLAG))
             this.programIndex = this.labels[label]
     }
     else {
@@ -116,6 +116,15 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         this.turing.Run("MOVE-BEGIN")
         this.turing.Run("MOVE-ALU")
         this.turing.WriteWord(value)
+        let result = this.turing.Run(command)
+        this.SetRegisterValue(args[0], result)
+    }
+    else if (command == ADD_CMD.name) {
+        let arg1 = this.GetRegisterValue(args[0])
+        let arg2 = this.GetArgumentValue(args[1])
+        this.turing.Run("MOVE-BEGIN")
+        this.turing.Run("MOVE-ALU")
+        this.turing.WriteWord(`${arg1}#${arg2}`)
         let result = this.turing.Run(command)
         this.SetRegisterValue(args[0], result)
     }

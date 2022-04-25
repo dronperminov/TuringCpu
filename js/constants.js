@@ -176,11 +176,11 @@ const TURING_STATES = [
 
     {name: 'PUSH', transitions: {'0': 'R', '1': 'R', '#': 'R', ' ': `#,R,${HALT}`}},
 
-    {name: "move-begin", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', '%': '%,R,check-zero'}},
+    {name: "move-begin", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', 'O': '0,L,move-begin', 'I': '1,L,move-begin', '%': '%,R,check-zero'}},
     {name: "return-to-alu", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', '%': `%,R,${HALT}`}},
 
-    {name: "write-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'z': 'R', 'c': 'c,R,write-carry-begin'}},
-    {name: "write-no-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'z': 'R', 'c': 'c,R,write-no-carry-begin'}},
+    {name: "write-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'O': '0,R,write-carry', 'I': '1,R,write-carry', '#': ',R,write-carry', 'z': 'R', 'c': 'c,R,write-carry-begin'}},
+    {name: "write-no-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'O': '0,R,write-no-carry', 'I': '1,R,write-no-carry', '#': ',R,write-no-carry', 'z': 'R', 'c': 'c,R,write-no-carry-begin'}},
     {name: "write-carry-begin", transitions: {'0': '1,L,move-begin', '1': '1,L,move-begin', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
     {name: "write-no-carry-begin", transitions: {'0': '0,L,move-begin', '1': '0,L,move-begin', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
 
@@ -191,9 +191,20 @@ const TURING_STATES = [
 
     {name: "check-zero", transitions: {'0': 'R', '1': '1,R,write-no-zero', ' ': ',N,write-zero'}},
 
+    // инкремент
     {name: "INC",   transitions: {'0': 'R',              '1': 'R',      ' ': `,L,INC-1`}},
     {name: "INC-1", transitions: {'0': '1,N,write-no-carry', '1': '0,L,',   '%': `%,R,write-carry`}},
 
+    // декремент
     {name: "DEC",   transitions: {'0': 'R',              '1': 'R',           ' ': `,L,DEC-1`}},
     {name: "DEC-1", transitions: {'0': '1,L,DEC-1', '1': '0,N,write-no-carry',   '%': `%,R,write-carry`}},
+
+    // сложение двух чисел
+    {name: "ADD",       transitions: {'0': "R", '1': "R", ' ': ',L,ADD-check', 'I': "R", '#': "R", 'O': "R"}},
+    {name: "ADD-check", transitions: {'0': ',L,ADD-zero', '1': ',L,ADD-one', '#': ',L,write-no-carry', }},
+    {name: "ADD-zero",  transitions: {'0': "L", '1': "L", '#': '#,L,ADD-zero2' }},
+    {name: "ADD-one",   transitions: {'0': "L", '1': "L", '#': '#,L,ADD-one2', }},
+    {name: "ADD-zero2", transitions: {'0': 'O,N,ADD', '1': 'I,N,ADD', 'I': "L", '%': '%,R,ADD', 'O': "L"}},
+    {name: "ADD-one2",  transitions: {'0': 'I,N,ADD', '1': 'O,L,ADD-one3', 'I': "L", '%': '%,R,write-carry', 'O': "L"}},
+    {name: "ADD-one3",  transitions: {'0': '1,N,ADD', '1': '0,L,ADD-one3', '%': '%,R,write-carry'}},
 ]

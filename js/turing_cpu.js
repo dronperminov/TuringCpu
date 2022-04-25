@@ -138,6 +138,18 @@ TuringCpu.prototype.HideAllLines = function() {
         instruction.line.classList.remove('active-line')
 }
 
+TuringCpu.prototype.GetFlag = function(name) {
+    this.turing.Run("MOVE-BEGIN")
+    if (name == ZERO_FLAG) {
+        this.turing.Run("MOVE-ZERO-FLAG")
+    }
+    else if (name == CARRY_FLAG) {
+        this.turing.Run("MOVE-CARRY-FLAG")
+    }
+
+    return this.turing.GetWord() == "1"
+}
+
 // TODO: step by step
 TuringCpu.prototype.GetRegisterValue = function(name) {
     this.turing.Run("MOVE-BEGIN")
