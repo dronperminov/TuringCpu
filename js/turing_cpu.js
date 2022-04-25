@@ -7,6 +7,7 @@ function TuringCpu(bitDepth, memoryCount) {
     this.Compile()
     this.Reset()
     this.RunProcess()
+
 }
 
 TuringCpu.prototype.InitControls = function() {
@@ -20,11 +21,13 @@ TuringCpu.prototype.InitControls = function() {
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
     this.resetBtn.addEventListener('click', () => this.Reset())
     this.compileBtn.addEventListener('click', () => { this.Reset(); this.Compile() })
+
+    window.addEventListener('resize', () => this.turing.ToHTML())
 }
 
 TuringCpu.prototype.InitTuringALU = function() {
     let alu = []
-    let aluBits = this.bitDepth * 3 + 5
+    let aluBits = this.bitDepth * 3 + 3
 
     alu.push(ALU_CHAR)
 
