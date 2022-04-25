@@ -24,14 +24,26 @@ TuringCpu.prototype.Stop = function() {
     this.runBtn.value = 'Запустить'
 }
 
+TuringCpu.prototype.IsEnd = function() {
+    return this.programIndex >= this.program.length && this.taskQueue.length == 0
+}
+
 TuringCpu.prototype.Step = function() {
-    if (this.programIndex >= this.program.length) {
+    if (this.IsEnd())
+        return
+
+    if (this.taskQueue.length == 0)
+        this.ProcessInstruction(this.program[this.programIndex++])
+
+    if (this.taskQueue.length > 0)
+        this.ProcessTask()
+
+    this.turing.ToHTML()
+
+    if (this.IsEnd()) {
         this.Stop()
         this.SetRunButtonsState(false)
-        return
     }
-
-    this.ProcessInstruction(this.program[this.programIndex++])
 }
 
 TuringCpu.prototype.Reset = function() {
@@ -41,6 +53,7 @@ TuringCpu.prototype.Reset = function() {
     this.InitTuring()
 
     this.programIndex = 0
+    this.taskQueue = []
 }
 
 TuringCpu.prototype.ProcessJump = function(jmp, label) {
@@ -76,18 +89,6 @@ TuringCpu.prototype.ProcessJump = function(jmp, label) {
     }
 }
 
-TuringCpu.prototype.ProcessMov = function(arg1, arg2) {
-    let value = this.GetArgumentValue(arg2)
-
-    if (IsAddress(arg1)) {
-        let address = this.AddressToBits(arg1)
-        this.SetMemoryValue(address, value)
-    }
-    else {
-        this.SetRegisterValue(arg1, value)
-    }
-}
-
 TuringCpu.prototype.ProcessInstruction = function(instruction) {
     console.log(instruction.command, instruction.args)
     this.HideAllLines()
@@ -100,41 +101,71 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         this.ProcessJump(command, instruction.args[0])
     }
     else if (command == MOV_CMD.name) {
-        this.ProcessMov(args[0], args[1])
+        this.GetArgumentValue(args[1], (word) => this.word = word)
+        this.SetArgumentValue(args[0], () => this.word)
     }
     else if (command == PUSH_CMD.name) {
-        let value = this.GetArgumentValue(args[0])
-        this.PushStack(value)
+        this.GetArgumentValue(args[0], (word) => this.word = word)
+        this.taskQueue.push({ type: RUN_TASK, state: "MOVE-STACK", skip: true})
+        this.taskQueue.push({ type: RUN_TASK, state: "PUSH"})
+        this.taskQueue.push({ type: WRITE_WORD_TASK, getWord: () => this.word})
     }
     else if (command == POP_CMD.name) {
-        let value = this.PopStack()
-        this.SetRegisterValue(args[0], value)
+        this.taskQueue.push({ type: RUN_TASK, state: "MOVE-STACK", skip: true})
+        this.taskQueue.push({ type: RUN_TASK, state: "POP-init"})
+        this.taskQueue.push({ type: READ_WORD_TASK, setWord: (value) => this.word = value})
+        this.taskQueue.push({ type: RUN_TASK, state: "POP"})
+        this.SetArgumentValue(args[0], () => this.word)
     }
     else if (command == INC_CMD.name || command == DEC_CMD.name || command == NOT_CMD.name) {
-        let value = this.GetRegisterValue(args[0])
-        this.turing.Run("MOVE-ALU")
-        this.turing.WriteWord(value)
-        let result = this.turing.Run(command)
-        this.SetRegisterValue(args[0], result)
+        this.GetRegisterValue(args[0], (word) => this.word = word)
+        this.taskQueue.push({ type: RUN_TASK, state: "MOVE-ALU", skip: true})
+        this.taskQueue.push({ type: WRITE_WORD_TASK, getWord: () => this.word})
+        this.taskQueue.push({ type: RUN_TASK, state: command})
+        this.taskQueue.push({ type: READ_WORD_TASK, setWord: (value) => this.word = value})
+        this.SetArgumentValue(args[0], () => this.word)
     }
-    else if ([ADD_CMD.name, SUB_CMD.name, MUL_CMD.name, AND_CMD.name, OR_CMD.name, XOR_CMD.name, SHR_CMD.name, SHL_CMD.name].indexOf(command) > -1) {
-        let arg1 = this.GetRegisterValue(args[0])
-        let arg2 = this.GetArgumentValue(args[1])
-        this.turing.Run("MOVE-ALU")
-        this.turing.WriteWord(`${arg1}#${arg2}`)
-        let result = this.turing.Run(command)
-        this.SetRegisterValue(args[0], result)
-    }
-    else if (command == CMP_CMD.name) {
-        let arg1 = this.GetRegisterValue(args[0])
-        let arg2 = this.GetArgumentValue(args[1])
-        this.turing.Run("MOVE-ALU")
-        this.turing.WriteWord(`${arg1}#${arg2}`)
-        this.turing.Run(SUB_CMD.name)
+    else if ([ADD_CMD.name, SUB_CMD.name, MUL_CMD.name, CMP_CMD.name, AND_CMD.name, OR_CMD.name, XOR_CMD.name, SHR_CMD.name, SHL_CMD.name].indexOf(command) > -1) {
+        this.GetRegisterValue(args[0], (word) => this.word1 = word)
+        this.GetArgumentValue(args[1], (word) => this.word2 = word)
+        this.taskQueue.push({ type: RUN_TASK, state: "MOVE-ALU", skip: true})
+        this.taskQueue.push({ type: WRITE_WORD_TASK, getWord: () => `${this.word1}#${this.word2}`})
+        this.taskQueue.push({ type: RUN_TASK, state: command == CMP_CMD.name ? SUB_CMD.name : command})
+
+        if (command != CMP_CMD.name) {
+            this.taskQueue.push({ type: READ_WORD_TASK, setWord: (value) => this.word = value})
+            this.SetArgumentValue(args[0], () => this.word)
+        }
     }
     else {
         throw `Unknown command "${instruction.command}"`
     }
+}
 
-    this.turing.ToHTML()
+TuringCpu.prototype.ProcessTask = function() {
+    let task = null
+    let skipAll = this.stepByInstructionsBox.checked
+    let skipArgs = this.skipArgumentsBox.checked
+
+    do {
+        task = this.taskQueue[0]
+
+        if (task.type == RUN_TASK) {
+            if (!task.isRunning)
+                this.turing.SetState(task.state)
+
+            task.isRunning = this.turing.Step()
+
+            if (task.isRunning)
+                continue
+        }
+        else if (task.type == WRITE_WORD_TASK) {
+            this.turing.WriteWord(task.getWord())
+        }
+        else if (task.type == READ_WORD_TASK) {
+            task.setWord(this.turing.GetWord())
+        }
+
+        this.taskQueue.shift()
+    } while (this.taskQueue.length > 0 && (task.type == READ_WORD_TASK || task.skip == skipArgs || skipAll))
 }

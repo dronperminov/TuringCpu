@@ -285,7 +285,7 @@ const TURING_STATES = [
     {name: "XOR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-one"}`},
 
     // логическая инверсия
-    {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",L,move-begin"}`},
+    {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",L,write-no-carry"}`},
 
     // битовый сдвиг вправо
     {name: "SHR", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHR-test"}`},
@@ -305,3 +305,7 @@ const TURING_STATES = [
     {name: "SHL-zero", transitions: `{"0": "L", "1": "0,L,SHL-one", "${ALU_CHAR}": "${ALU_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
     {name: "SHL-one", transitions: `{"0": "1,L,SHL-zero", "1": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
 ]
+
+const RUN_TASK = 'run'
+const WRITE_WORD_TASK = 'write-word'
+const READ_WORD_TASK = 'read-word'

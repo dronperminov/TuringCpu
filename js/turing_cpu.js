@@ -7,7 +7,6 @@ function TuringCpu(bitDepth, memoryCount) {
     this.Compile()
     this.Reset()
     this.RunProcess()
-
 }
 
 TuringCpu.prototype.InitControls = function() {
@@ -16,6 +15,7 @@ TuringCpu.prototype.InitControls = function() {
     this.resetBtn = document.getElementById('reset-btn')
     this.compileBtn = document.getElementById('compile-btn')
     this.stepByInstructionsBox = document.getElementById('step-by-instructions-box')
+    this.skipArgumentsBox = document.getElementById('skip-arguments-box')
 
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
@@ -93,7 +93,7 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
             else if (index == -1 || index >= targetIndex)
                 leftStates[char] = char != move.char ? 'L' : `${char},R,${HALT}`
             else
-                leftStates[char] = `${char},L,${move.name}`
+                leftStates[char] = `${char},R,${rightName}`
 
             if (index == -1 || index <= targetIndex)
                 rightStates[char] = char != move.char ? 'R' : `${char},R,${HALT}`
@@ -171,49 +171,31 @@ TuringCpu.prototype.GetFlag = function(name) {
     return this.turing.GetWord() == "1"
 }
 
-// TODO: step by step
-TuringCpu.prototype.GetRegisterValue = function(name) {
-    return this.turing.Run(`MOVE-REGISTER-${name}`)
+TuringCpu.prototype.GetRegisterValue = function(name, setWord) {
+    this.taskQueue.push({ type: RUN_TASK, state: `MOVE-REGISTER-${name}`, skip: true})
+    this.taskQueue.push({ type: READ_WORD_TASK, setWord: setWord, skip: true })
 }
 
-// TODO: step by step
-TuringCpu.prototype.SetRegisterValue = function(name, value) {
-    this.turing.Run(`MOVE-REGISTER-${name}`)
-    this.turing.WriteWord(value)
+TuringCpu.prototype.SetRegisterValue = function(name, getWord) {
+    this.taskQueue.push({type: RUN_TASK, state: `MOVE-REGISTER-${name}`, skip: true})
+    this.taskQueue.push({type: WRITE_WORD_TASK, getWord: getWord, skip: true})
 }
 
-// TODO: step by step
-TuringCpu.prototype.SetMemoryValue = function(address, value) {
-    this.turing.Run(`MOVE-MEMORY`)
-    this.turing.WriteWord(`${address}I`)
-    this.turing.Run("MEMORY-RUN")
-    this.turing.WriteWord(value)
+TuringCpu.prototype.GetMemoryValue = function(setWord) {
+    this.taskQueue.push({type: RUN_TASK, state: `MOVE-MEMORY`, skip: true})
+    this.taskQueue.push({type: WRITE_WORD_TASK, getWord: () => `${this.address}I`, skip: true})
+    this.taskQueue.push({type: RUN_TASK, state: `MEMORY-RUN`, skip: true})
+    this.taskQueue.push({ type: READ_WORD_TASK, setWord: setWord, skip: true })
 }
 
-// TODO: step by step
-TuringCpu.prototype.GetMemoryValue = function(address) {
-    this.turing.Run(`MOVE-MEMORY`)
-    this.turing.WriteWord(`${address}I`)
-    return this.turing.Run("MEMORY-RUN")
+TuringCpu.prototype.SetMemoryValue = function(getWord) {
+    this.taskQueue.push({type: RUN_TASK, state: `MOVE-MEMORY`, skip: true})
+    this.taskQueue.push({type: WRITE_WORD_TASK, getWord: () => `${this.address}I`, skip: true})
+    this.taskQueue.push({type: RUN_TASK, state: `MEMORY-RUN`, skip: true})
+    this.taskQueue.push({type: WRITE_WORD_TASK, getWord: getWord, skip: true})
 }
 
-// TODO: step by step
-TuringCpu.prototype.PushStack = function(value) {
-    this.turing.Run("MOVE-STACK")
-    this.turing.Run("PUSH")
-    this.turing.WriteWord(value)
-}
-
-// TODO: step by step
-TuringCpu.prototype.PopStack = function() {
-    this.turing.Run("MOVE-STACK")
-    this.turing.Run("POP-init")
-    let value = this.turing.GetWord()
-    this.turing.Run("POP")
-    return value
-}
-
-TuringCpu.prototype.ConstantToBits = function(value) {
+TuringCpu.prototype.ConstantToBits = function(value, result) {
     if (value.startsWith('0b')) {
         value = Number.parseInt(value.substr(2), 2)
     }
@@ -238,25 +220,43 @@ TuringCpu.prototype.ConstantToBits = function(value) {
     for (; bits.length != this.bitDepth; value >>= 1)
         bits.push(value & 1)
 
-    return bits.reverse().join('')
+    let constant = bits.reverse().join('')
+    this.taskQueue.push({ type: READ_WORD_TASK, setWord: (word) => result(constant) })
 }
 
-TuringCpu.prototype.AddressToBits = function(arg) {
+TuringCpu.prototype.AddressToBits = function(arg, word) {
     let address = arg.substr(1, arg.length - 2)
 
-    if (IsRegister(address))
-        return this.GetRegisterValue(address)
-
-    return this.ConstantToBits(address)
+    if (IsRegister(address)) {
+        this.GetRegisterValue(address, word)
+    }
+    else {
+        this.ConstantToBits(address, word)
+    }
 }
 
-TuringCpu.prototype.GetArgumentValue = function(arg) {
-    if (IsRegister(arg))
-        return this.GetRegisterValue(arg)
+TuringCpu.prototype.GetArgumentValue = function(arg, word) {
+    if (IsRegister(arg)) {
+        this.GetRegisterValue(arg, word)
+    }
+    else if (IsConstant(arg)) {
+        this.ConstantToBits(arg, word)
+    }
+    else {
+        this.AddressToBits(arg, (address) => this.address = address)
+        this.GetMemoryValue(word)
+    }
+}
 
-    if (IsConstant(arg))
-        return this.ConstantToBits(arg)
-
-    let address = this.AddressToBits(arg)
-    return this.GetMemoryValue(address)
+TuringCpu.prototype.SetArgumentValue = function(arg, value) {
+    if (IsRegister(arg)) {
+        this.SetRegisterValue(arg, value)
+    }
+    else if (IsAddress(arg)) {
+        this.AddressToBits(arg, (address) => this.address = address)
+        this.SetMemoryValue(value)
+    }
+    else {
+        throw `invalid argument for SetValue: "${arg}"`
+    }
 }

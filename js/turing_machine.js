@@ -83,6 +83,10 @@ TuringMachine.prototype.Run = function(state) {
     return this.GetWord()
 }
 
+TuringMachine.prototype.SetState = function(state) {
+    this.state = state
+}
+
 TuringMachine.prototype.MakeTapeCell = function(index) {
     let cell = document.createElement('div')
     cell.className = 'turing-tape-cell'
