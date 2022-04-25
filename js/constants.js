@@ -147,6 +147,13 @@ const CARRY_FLAG_CHAR = 'c'
 const MEMORY_CHAR = 'm'
 const STACK_CHAR = 's'
 
+const PARTS_ORDER = [
+    ALU_CHAR,
+    ...REGISTER_NAMES,
+    MEMORY_CHAR,
+    STACK_CHAR
+]
+
 const TURING_ALPHABET = [
     LAMBDA,
     '0', '1',

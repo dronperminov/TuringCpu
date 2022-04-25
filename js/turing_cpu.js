@@ -34,22 +34,19 @@ TuringCpu.prototype.InitTuringALU = function() {
     for (let i = 0; i < aluBits; i++)
         alu.push(LAMBDA)
 
+    alu = alu.concat([ZERO_FLAG_CHAR, '0', LAMBDA])
+    alu = alu.concat([CARRY_FLAG_CHAR, '0', LAMBDA])
     return alu
 }
 
-TuringCpu.prototype.InitTuringRegisters = function() {
-    let registers = []
+TuringCpu.prototype.InitTuringRegister = function(name) {
+    let register = [name]
 
-    for (let register of REGISTER_NAMES) {
-        registers.push(register)
+    for (let i = 0; i < this.bitDepth; i++)
+        register.push('0')
 
-        for (let i = 0; i < this.bitDepth; i++)
-            registers.push('0')
-
-        registers.push(LAMBDA)
-    }
-
-    return registers
+    register.push(LAMBDA)
+    return register
 }
 
 TuringCpu.prototype.InitTuringMemory = function() {
@@ -101,13 +98,19 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
 }
 
 TuringCpu.prototype.InitTuring = function() {
-    let alu = this.InitTuringALU()
-    let flags = [ZERO_FLAG_CHAR, '0', LAMBDA, CARRY_FLAG_CHAR, '0', LAMBDA]
-    let registers = this.InitTuringRegisters()
-    let memory = this.InitTuringMemory()
-    let stack = [STACK_CHAR]
+    let parts = {}
+    parts[ALU_CHAR] = this.InitTuringALU()
 
-    let word = [BEGIN_CHAR].concat(alu).concat(flags).concat(registers).concat(memory).concat(stack)
+    for (let name of REGISTER_NAMES)
+        parts[name] = this.InitTuringRegister(name)
+
+    parts[MEMORY_CHAR] = this.InitTuringMemory()
+    parts[STACK_CHAR] = [STACK_CHAR]
+
+    let word = [BEGIN_CHAR]
+
+    for (let char of PARTS_ORDER)
+        word = word.concat(parts[char])
 
     this.turing = new TuringMachine()
     this.turing.SetWord(word.join(''))
