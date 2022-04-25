@@ -219,6 +219,38 @@ const TURING_STATES = [
     {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SUB", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SUB"}`},
     {name: "SUB-clear", transitions: `{"0": "L", "1": "L", "I": "1,L,SUB-clear", "O": "0,L,SUB-clear", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
 
+    // умножение
+    {name: "MUL", transitions: `{"0": "O,R,MUL-move0", "1": "O,R,MUL-move1", "#": ",R,MUL-norm1", "O": "R"}`},
+    {name: "MUL-move1", transitions: `{"0": "R", "1": "R", "#": "#,R,MUL-move1-check", "${LAMBDA}":  ",R,MUL-move1-last"}`},
+    {name: "MUL-move0", transitions: `{"0": "R", "1": "R", "#": "#,R,MUL-move0-check", "${LAMBDA}":  ",R,MUL-move0-last"}`},
+    {name: "MUL-move0-check", transitions: `{"0": "O,R,MUL-move0", "1": "O,R,MUL-move1", "I": "R", "O": "R"}`},
+    {name: "MUL-move1-check", transitions: `{"0": "I,R,MUL-move0", "1": "I,R,MUL-move1", "I": "R", "O": "R"}`},
+    {name: "MUL-move0-last", transitions: `{"0": "R", "1": "R", "I": "R", "O": "R", "${LAMBDA}":  "0,L,MUL-begin"}`},
+    {name: "MUL-move1-last", transitions: `{"0": "R", "1": "R", "I": "R", "O": "R", "${LAMBDA}":  "1,L,MUL-begin"}`},
+    {name: "MUL-begin", transitions: `{"0": "L", "1": "L", "#": "L", "I": "L", "O": "L", "${ALU_CHAR}": "${ALU_CHAR},R,MUL", "${LAMBDA}":  "L"}`},
+    {name: "MUL-norm1", transitions: `{"I": "1,R,MUL-norm1", "O": "0,R,MUL-norm1", "${LAMBDA}":  "#,L,MUL-norm2"}`},
+    {name: "MUL-norm2", transitions: `{"0": "L", "1": "L", "I": "1,L,MUL-norm2", "O": "0,L,MUL-norm2", "${ALU_CHAR}": "${ALU_CHAR},R,MUL-pre", "${LAMBDA}":  "L"}`},
+    {name: "MUL-pre", transitions: `{"0": "R", "1": "R", "${LAMBDA}":  ",R,MUL-go-back"}`},
+    {name: "MUL-clean", transitions: `{"0": ",L,MUL-clean", "1": ",L,MUL-clean", "${LAMBDA}": ",L,move-begin"}`},
+    {name: "MUL-go-shift", transitions: `{"0": "R", "1": "R", "#": "#,N,MUL-shift", "I": "1,R,MUL-go-shift", "O": "0,R,MUL-go-shift", "${LAMBDA}": "R"}`},
+    {name: "MUL-norm", transitions: `{"0": "L", "1": "L", "I": "1,L,MUL-norm", "O": "0,L,MUL-norm", "${ALU_CHAR}": "${ALU_CHAR},R,MUL-go-shift", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,MUL-go-shift"}`},
+    {name: "MUL-back2", transitions: `{"0": "R", "1": "R", "I": "I,L,MUL-add", "O": "O,L,MUL-add"}`},
+    {name: "MUL-back", transitions: `{"0": "R", "1": "R", "I": "R", "O": "R", "${LAMBDA}": ",R,MUL-back2"}`},
+    {name: "MUL-make-carry", transitions: `{"0": "1,R,MUL-back", "1": "0,L,MUL-make-carry", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,MUL-back", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,MUL-back"}`},
+    {name: "MUL-make-add1", transitions: `{"0": "I,R,MUL-back", "1": "O,L,MUL-make-carry", "I": "L", "O": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,MUL-back", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,MUL-back"}`},
+    {name: "MUL-make-add0", transitions: `{"0": "O,R,MUL-back", "1": "I,R,MUL-back", "I": "L", "O": "L", "${ALU_CHAR}": "${ALU_CHAR},R,MUL-back", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,MUL-back"}`},
+    {name: "MUL-add1", transitions: `{"0": "L", "1": "L", "${LAMBDA}": ",L,MUL-make-add1"}`},
+    {name: "MUL-add0", transitions: `{"0": "L", "1": "L", "${LAMBDA}": ",L,MUL-make-add0"}`},
+    {name: "MUL-add", transitions: `{"0": "O,L,MUL-add0", "1": "I,L,MUL-add1", "${LAMBDA}": ",L,MUL-norm"}`},
+    {name: "MUL-add-move", transitions: `{"0": "L", "1": "L", "#": "#,L,MUL-add"}`},
+    {name: "MUL-make-shift1", transitions: `{"0": "1,R,MUL-make-shift0", "1": "R", "${LAMBDA}": "1,N,MUL-check-last"}`},
+    {name: "MUL-make-shift0", transitions: `{"0": "R", "1": "0,R,MUL-make-shift1", "${LAMBDA}": "0,N,MUL-check-last"}`},
+    {name: "MUL-make-shift", transitions: `{"0": "#,R,MUL-make-shift0", "1": "#,R,MUL-make-shift1", "${LAMBDA}": ",L,MUL-clean"}`},
+    {name: "MUL-shift", transitions: `{"0": "L", "1": "L", "#": "0,R,MUL-make-shift"}`},
+    {name: "MUL-check-last", transitions: `{"0": ",L,MUL-shift", "1": ",L,MUL-add-move"}`},
+    {name: "MUL-go-back", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,MUL-check-last"}`},
+
+    // логическое И
     {name: "AND", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,AND-check"}`},
     {name: "AND-check", transitions: `{"0": ",L,AND-left0", "1": ",L,AND-left1", "#": ",L,normalize"}`},
     {name: "AND-zero", transitions: `{"0": "O,N,AND", "1": "O,N,AND", "I": "L", "O": "L"}`},
@@ -226,6 +258,7 @@ const TURING_STATES = [
     {name: "AND-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,AND-zero"}`},
     {name: "AND-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,AND-one"}`},
 
+    // логическое ИЛИ
     {name: "OR", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,OR-check"}`},
     {name: "OR-check", transitions: `{"0": ",L,OR-left0", "1": ",L,OR-left1", "#": ",L,normalize"}`},
     {name: "OR-zero", transitions: `{"0": "O,N,OR", "1": "I,N,OR", "I": "L", "O": "L"}`},
@@ -233,6 +266,7 @@ const TURING_STATES = [
     {name: "OR-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,OR-zero"}`},
     {name: "OR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,OR-one"}`},
 
+    // логическое исключающее ИЛИ
     {name: "XOR", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,XOR-check"}`},
     {name: "XOR-check", transitions: `{"0": ",L,XOR-left0", "1": ",L,XOR-left1", "#": ",L,normalize"}`},
     {name: "XOR-zero", transitions: `{"0": "O,N,XOR", "1": "I,N,XOR", "I": "L", "O": "L"}`},
@@ -240,8 +274,10 @@ const TURING_STATES = [
     {name: "XOR-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-zero"}`},
     {name: "XOR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-one"}`},
 
+    // логическая инверсия
     {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",L,move-begin"}`},
 
+    // битовый сдвиг вправо
     {name: "SHR", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHR-test"}`},
     {name: "SHR-test", transitions: `{"0": "1,L,SHR-test", "1": "0,L,SHR-pre", "#": ",R,SHR-clear"}`},
     {name: "SHR-clear", transitions: `{"0": ",R,SHR-clear", "1": ",R,SHR-clear", "${LAMBDA}": "${LAMBDA},L,move-begin"}`},
@@ -250,6 +286,7 @@ const TURING_STATES = [
     {name: "SHR-zero", transitions: `{"0": "R", "1": "0,R,SHR-one", "#": "#,R,SHR"}`},
     {name: "SHR-one", transitions: `{"0": "1,R,SHR-zero", "1": "R", "#": "#,R,SHR"}`},
 
+    // битовый сдвиг влево
     {name: "SHL", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHL-test"}`},
     {name: "SHL-test", transitions: `{"0": "1,L,SHL-test", "1": "0,L,SHL-pre", "#": ",R,SHL-clear"}`},
     {name: "SHL-clear", transitions: `{"0": ",R,SHL-clear", "1": ",R,SHL-clear", "${LAMBDA}": "${LAMBDA},L,move-begin"}`},
