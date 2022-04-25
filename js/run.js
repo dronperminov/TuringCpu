@@ -112,7 +112,6 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
     }
     else if (command == INC_CMD.name || command == DEC_CMD.name || command == NOT_CMD.name) {
         let value = this.GetRegisterValue(args[0])
-        this.turing.Run("MOVE-BEGIN")
         this.turing.Run("MOVE-ALU")
         this.turing.WriteWord(value)
         let result = this.turing.Run(command)
@@ -121,7 +120,6 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
     else if ([ADD_CMD.name, SUB_CMD.name, MUL_CMD.name, AND_CMD.name, OR_CMD.name, XOR_CMD.name, SHR_CMD.name, SHL_CMD.name].indexOf(command) > -1) {
         let arg1 = this.GetRegisterValue(args[0])
         let arg2 = this.GetArgumentValue(args[1])
-        this.turing.Run("MOVE-BEGIN")
         this.turing.Run("MOVE-ALU")
         this.turing.WriteWord(`${arg1}#${arg2}`)
         let result = this.turing.Run(command)
@@ -130,7 +128,6 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
     else if (command == CMP_CMD.name) {
         let arg1 = this.GetRegisterValue(args[0])
         let arg2 = this.GetArgumentValue(args[1])
-        this.turing.Run("MOVE-BEGIN")
         this.turing.Run("MOVE-ALU")
         this.turing.WriteWord(`${arg1}#${arg2}`)
         this.turing.Run(SUB_CMD.name)

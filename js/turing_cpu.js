@@ -34,8 +34,6 @@ TuringCpu.prototype.InitTuringALU = function() {
     for (let i = 0; i < aluBits; i++)
         alu.push(LAMBDA)
 
-    alu = alu.concat([ZERO_FLAG_CHAR, '0', LAMBDA])
-    alu = alu.concat([CARRY_FLAG_CHAR, '0', LAMBDA])
     return alu
 }
 
@@ -81,12 +79,28 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
         moves.push({name: `MOVE-REGISTER-${register}`, char: register})
 
     for (let move of moves) {
-        let states = {}
+        let leftStates = {}
+        let rightStates = {}
+        let rightName = `${move.name}-RIGHT`
+        let targetIndex = PARTS_ORDER.indexOf(move.char)
 
-        for (let char of chars)
-            states[char] = char != move.char ? 'R' : `${char},R,${HALT}`
+        for (let char of chars) {
+            let index = PARTS_ORDER.indexOf(char)
 
-        this.turing.AddState(move.name, states)
+            if (char == BEGIN_CHAR) {
+                leftStates[char] = `${char},R,${rightName}`
+            }
+            else if (index == -1 || index >= targetIndex)
+                leftStates[char] = char != move.char ? 'L' : `${char},R,${HALT}`
+            else
+                leftStates[char] = `${char},L,${move.name}`
+
+            if (index == -1 || index <= targetIndex)
+                rightStates[char] = char != move.char ? 'R' : `${char},R,${HALT}`
+        }
+
+        this.turing.AddState(move.name, leftStates)
+        this.turing.AddState(`${rightName}`, rightStates)
     }
 
     let beginState = {}
@@ -100,6 +114,8 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
 TuringCpu.prototype.InitTuring = function() {
     let parts = {}
     parts[ALU_CHAR] = this.InitTuringALU()
+    parts[ZERO_FLAG_CHAR] = [ZERO_FLAG_CHAR, '0', LAMBDA]
+    parts[CARRY_FLAG_CHAR] = [CARRY_FLAG_CHAR, '0', LAMBDA]
 
     for (let name of REGISTER_NAMES)
         parts[name] = this.InitTuringRegister(name)
@@ -145,7 +161,6 @@ TuringCpu.prototype.HideAllLines = function() {
 }
 
 TuringCpu.prototype.GetFlag = function(name) {
-    this.turing.Run("MOVE-BEGIN")
     if (name == ZERO_FLAG) {
         this.turing.Run("MOVE-ZERO-FLAG")
     }
@@ -158,20 +173,17 @@ TuringCpu.prototype.GetFlag = function(name) {
 
 // TODO: step by step
 TuringCpu.prototype.GetRegisterValue = function(name) {
-    this.turing.Run("MOVE-BEGIN")
     return this.turing.Run(`MOVE-REGISTER-${name}`)
 }
 
 // TODO: step by step
 TuringCpu.prototype.SetRegisterValue = function(name, value) {
-    this.turing.Run("MOVE-BEGIN")
     this.turing.Run(`MOVE-REGISTER-${name}`)
     this.turing.WriteWord(value)
 }
 
 // TODO: step by step
 TuringCpu.prototype.SetMemoryValue = function(address, value) {
-    this.turing.Run("MOVE-BEGIN")
     this.turing.Run(`MOVE-MEMORY`)
     this.turing.WriteWord(`${address}I`)
     this.turing.Run("MEMORY-RUN")
@@ -180,7 +192,6 @@ TuringCpu.prototype.SetMemoryValue = function(address, value) {
 
 // TODO: step by step
 TuringCpu.prototype.GetMemoryValue = function(address) {
-    this.turing.Run("MOVE-BEGIN")
     this.turing.Run(`MOVE-MEMORY`)
     this.turing.WriteWord(`${address}I`)
     return this.turing.Run("MEMORY-RUN")
@@ -188,7 +199,6 @@ TuringCpu.prototype.GetMemoryValue = function(address) {
 
 // TODO: step by step
 TuringCpu.prototype.PushStack = function(value) {
-    this.turing.Run("MOVE-BEGIN")
     this.turing.Run("MOVE-STACK")
     this.turing.Run("PUSH")
     this.turing.WriteWord(value)
@@ -196,7 +206,6 @@ TuringCpu.prototype.PushStack = function(value) {
 
 // TODO: step by step
 TuringCpu.prototype.PopStack = function() {
-    this.turing.Run("MOVE-BEGIN")
     this.turing.Run("MOVE-STACK")
     this.turing.Run("POP-init")
     let value = this.turing.GetWord()

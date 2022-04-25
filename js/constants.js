@@ -149,6 +149,8 @@ const STACK_CHAR = 's'
 
 const PARTS_ORDER = [
     ALU_CHAR,
+    ZERO_FLAG_CHAR,
+    CARRY_FLAG_CHAR,
     ...REGISTER_NAMES,
     MEMORY_CHAR,
     STACK_CHAR
@@ -165,6 +167,7 @@ const TURING_ALPHABET = [
     STACK_CHAR,
     ...REGISTER_NAMES
 ]
+
 const TURING_STATES = [
     {name: "MEMORY-RUN",        transitions: `{"0": "R", "1": "R", "I": "I,L,MEMORY-MOVE"}`},
     {name: "MEMORY-MOVE",       transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark"}`},
