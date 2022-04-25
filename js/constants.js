@@ -206,4 +206,14 @@ const TURING_STATES = [
     {name: "ADD-zero2", transitions: `{"0": "O,N,ADD", "1": "I,N,ADD", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD", "O": "L"}`},
     {name: "ADD-one2",  transitions: `{"0": "I,N,ADD", "1": "O,L,ADD-one3", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry", "O": "L"}`},
     {name: "ADD-one3",  transitions: `{"0": "1,N,ADD", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+
+    // разность двух чисел
+    {name: "SUB", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,SUB-check"}`},
+    {name: "SUB-check", transitions: `{"0": ",L,SUB-move0", "1": ",L,SUB-move1", "#": ",L,SUB-clear"}`},
+    {name: "SUB-move0", transitions: `{"0": "L", "1": "L", "#": "#,L,SUB-sub0"}`},
+    {name: "SUB-move1", transitions: `{"0": "L", "1": "L", "#": "#,L,SUB-sub1"}`},
+    {name: "SUB-sub0", transitions: `{"0": "O,N,SUB", "1": "I,N,SUB", "I": "L", "O": "L"}`},
+    {name: "SUB-sub1", transitions: `{"0": "I,L,SUB-sub-carry", "1": "O,N,SUB", "I": "L", "O": "L"}`},
+    {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+    {name: "SUB-clear", transitions: `{"0": "L", "1": "L", "I": "1,L,SUB-clear", "O": "0,L,SUB-clear", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry"}`},
 ]
