@@ -128,6 +128,14 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         let result = this.turing.Run(command)
         this.SetRegisterValue(args[0], result)
     }
+    else if (command == CMP_CMD.name) {
+        let arg1 = this.GetRegisterValue(args[0])
+        let arg2 = this.GetArgumentValue(args[1])
+        this.turing.Run("MOVE-BEGIN")
+        this.turing.Run("MOVE-ALU")
+        this.turing.WriteWord(`${arg1}#${arg2}`)
+        this.turing.Run(SUB_CMD.name)
+    }
     else {
         this.fakeCpu.ProcessInstruction(instruction)
     }

@@ -141,6 +141,7 @@ const RIGHT_CELL = '›'
 
 const BEGIN_CHAR = '^'
 const ALU_CHAR = '%'
+const ALU_CARRY_CHAR = '$'
 const ZERO_FLAG_CHAR = 'z'
 const CARRY_FLAG_CHAR = 'c'
 const MEMORY_CHAR = 'm'
@@ -189,6 +190,7 @@ const TURING_STATES = [
     {name: "write-no-zero-begin", transitions: `{"0": "0,L,return-to-alu", "1": "0,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
 
     {name: "check-zero", transitions: `{"0": "R", "1": "1,R,write-no-zero", "${LAMBDA}": ",N,write-zero"}`},
+    {name: "normalize", transitions: `{"0": "L", "1": "L", "I": "1,L,normalize", "O": "0,L,normalize", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
 
     // инкремент
     {name: "INC",   transitions: `{"0": "R",              "1": "R",      "${LAMBDA}": ",L,INC-1"}`},
@@ -200,12 +202,12 @@ const TURING_STATES = [
 
     // сложение двух чисел
     {name: "ADD",       transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ADD-check", "I": "R", "#": "R", "O": "R"}`},
-    {name: "ADD-check", transitions: `{"0": ",L,ADD-zero", "1": ",L,ADD-one", "#": ",L,write-no-carry" }`},
+    {name: "ADD-check", transitions: `{"0": ",L,ADD-zero", "1": ",L,ADD-one", "#": ",L,normalize" }`},
     {name: "ADD-zero",  transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-zero2" }`},
     {name: "ADD-one",   transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-one2" }`},
-    {name: "ADD-zero2", transitions: `{"0": "O,N,ADD", "1": "I,N,ADD", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD", "O": "L"}`},
-    {name: "ADD-one2",  transitions: `{"0": "I,N,ADD", "1": "O,L,ADD-one3", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry", "O": "L"}`},
-    {name: "ADD-one3",  transitions: `{"0": "1,N,ADD", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+    {name: "ADD-zero2", transitions: `{"0": "O,N,ADD", "1": "I,N,ADD", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "O": "L"}`},
+    {name: "ADD-one2",  transitions: `{"0": "I,N,ADD", "1": "O,L,ADD-one3", "I": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "O": "L"}`},
+    {name: "ADD-one3",  transitions: `{"0": "1,N,ADD", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD"}`},
 
     // разность двух чисел
     {name: "SUB", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,SUB-check"}`},
@@ -214,6 +216,6 @@ const TURING_STATES = [
     {name: "SUB-move1", transitions: `{"0": "L", "1": "L", "#": "#,L,SUB-sub1"}`},
     {name: "SUB-sub0", transitions: `{"0": "O,N,SUB", "1": "I,N,SUB", "I": "L", "O": "L"}`},
     {name: "SUB-sub1", transitions: `{"0": "I,L,SUB-sub-carry", "1": "O,N,SUB", "I": "L", "O": "L"}`},
-    {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
-    {name: "SUB-clear", transitions: `{"0": "L", "1": "L", "I": "1,L,SUB-clear", "O": "0,L,SUB-clear", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry"}`},
+    {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SUB", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SUB"}`},
+    {name: "SUB-clear", transitions: `{"0": "L", "1": "L", "I": "1,L,SUB-clear", "O": "0,L,SUB-clear", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
 ]
