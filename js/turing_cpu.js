@@ -19,7 +19,7 @@ TuringCpu.prototype.InitControls = function() {
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
     this.resetBtn.addEventListener('click', () => this.Reset())
-    this.compileBtn.addEventListener('click', () => this.Compile())
+    this.compileBtn.addEventListener('click', () => { this.Reset(); this.Compile() })
 }
 
 TuringCpu.prototype.InitTuringALU = function() {
@@ -99,7 +99,7 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
 
 TuringCpu.prototype.InitTuring = function() {
     let alu = this.InitTuringALU()
-    let flags = [ZERO_FLAG_CHAR, '1', LAMBDA, CARRY_FLAG_CHAR, '0', LAMBDA]
+    let flags = [ZERO_FLAG_CHAR, '0', LAMBDA, CARRY_FLAG_CHAR, '0', LAMBDA]
     let registers = this.InitTuringRegisters()
     let memory = this.InitTuringMemory()
     let stack = [STACK_CHAR]
@@ -113,7 +113,7 @@ TuringCpu.prototype.InitTuring = function() {
     this.InitTuringMoves(TURING_ALPHABET)
 
     for (let state of TURING_STATES)
-        this.turing.AddState(state.name, state.transitions)
+        this.turing.AddState(state.name, JSON.parse(state.transitions))
 }
 
 TuringCpu.prototype.SetButtonState = function(button, enabled) {

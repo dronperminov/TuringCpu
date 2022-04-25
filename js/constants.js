@@ -157,54 +157,53 @@ const TURING_ALPHABET = [
     STACK_CHAR,
     ...REGISTER_NAMES
 ]
-
 const TURING_STATES = [
-    {name: "MEMORY-RUN",        transitions: {'0': 'R', '1': 'R', 'I': 'I,L,MEMORY-MOVE'}},
-    {name: "MEMORY-MOVE",       transitions: {'0': '1,L,MEMORY-MOVE-dec', '1': '0,R,MEMORY-MOVE-mark'}},
-    {name: "MEMORY-MOVE-mark",  transitions: {'0': "R", '1': "R", '#': 'O,L,MEMORY-MOVE-begin', 'I': "R", 'O': "R", ' ': "R"}},
-    {name: "MEMORY-MOVE-begin", transitions: {'0': "L", '1': "L", '#': "L", 'I': 'I,L,MEMORY-MOVE', 'O': "L", ' ': "L"}},
-    {name: "MEMORY-MOVE-dec",   transitions: {'0': '1,L,MEMORY-MOVE-dec', '1': '0,R,MEMORY-MOVE-mark', 'm': `${MEMORY_CHAR},R,MEMORY-MOVE-shift`}},
-    {name: "MEMORY-MOVE-shift", transitions: {'0': ',R,MEMORY-MOVE-shift', '1': ',R,MEMORY-MOVE-shift', 'I': ',R,MEMORY-MOVE-find'}},
-    {name: "MEMORY-MOVE-find",  transitions: {'0': "R", '1': "R", ' ': "R", '#': `#,R,${HALT}`, 'O': '#,R,MEMORY-MOVE-find'}},
+    {name: "MEMORY-RUN",        transitions: `{"0": "R", "1": "R", "I": "I,L,MEMORY-MOVE"}`},
+    {name: "MEMORY-MOVE",       transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark"}`},
+    {name: "MEMORY-MOVE-mark",  transitions: `{"0": "R", "1": "R", "#": "O,L,MEMORY-MOVE-begin", "I": "R", "O": "R", "${LAMBDA}": "R"}`},
+    {name: "MEMORY-MOVE-begin", transitions: `{"0": "L", "1": "L", "#": "L", "I": "I,L,MEMORY-MOVE", "O": "L", "${LAMBDA}": "L"}`},
+    {name: "MEMORY-MOVE-dec",   transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark", "${MEMORY_CHAR}": "${MEMORY_CHAR},R,MEMORY-MOVE-shift"}`},
+    {name: "MEMORY-MOVE-shift", transitions: `{"0": ",R,MEMORY-MOVE-shift", "1": ",R,MEMORY-MOVE-shift", "I": ",R,MEMORY-MOVE-find"}`},
+    {name: "MEMORY-MOVE-find",  transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "#": "#,R,${HALT}", "O": "#,R,MEMORY-MOVE-find"}`},
 
-    {name: 'POP-init', transitions: {'0': "R", '1': "R", '#': "R", ' ': ',L,POP-#'}},
-    {name: 'POP-#', transitions: {'0': "L", '1': "L", '#': `#,R,${HALT}`, 's': `s,R,${HALT}`}},
-    {name: 'POP',        transitions: {'0': '0,N,POP-clear', '1': '1,N,POP-clear', ' ': `,N,${HALT}`}},
-    {name: 'POP-clear',  transitions: {'0': ',R,POP-clear', '1': ',R,POP-clear', ' ': ',L,POP-move'}},
-    {name: 'POP-move',   transitions: {'#': `,L,POP-begin`, ' ': 'L'}},
-    {name: 'POP-begin',  transitions: {'0': 'L', '1': 'L', '#': `#,R,${HALT}`, 's': `${HALT}`}},
+    {name: "POP-init", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,POP-#"}`},
+    {name: "POP-#", transitions: `{"0": "L", "1": "L", "#": "#,R,${HALT}", "${STACK_CHAR}": "${STACK_CHAR},R,${HALT}"}`},
+    {name: "POP",        transitions: `{"0": "0,N,POP-clear", "1": "1,N,POP-clear", "${LAMBDA}": ",N,${HALT}"}`},
+    {name: "POP-clear",  transitions: `{"0": ",R,POP-clear", "1": ",R,POP-clear", "${LAMBDA}": ",L,POP-move"}`},
+    {name: "POP-move",   transitions: `{"#": ",L,POP-begin", "${LAMBDA}": "L"}`},
+    {name: "POP-begin",  transitions: `{"0": "L", "1": "L", "#": "#,R,${HALT}", "${STACK_CHAR}": "${HALT}"}`},
 
-    {name: 'PUSH', transitions: {'0': 'R', '1': 'R', '#': 'R', ' ': `#,R,${HALT}`}},
+    {name: "PUSH", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": "#,R,${HALT}"}`},
 
-    {name: "move-begin", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', 'O': '0,L,move-begin', 'I': '1,L,move-begin', '%': '%,R,check-zero'}},
-    {name: "return-to-alu", transitions: {'0': 'L',   '1': 'L', 'z': 'L', 'c': 'L', ' ': 'L', '%': `%,R,${HALT}`}},
+    {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero"}`},
+    {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
 
-    {name: "write-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'O': '0,R,write-carry', 'I': '1,R,write-carry', '#': ',R,write-carry', 'z': 'R', 'c': 'c,R,write-carry-begin'}},
-    {name: "write-no-carry", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'O': '0,R,write-no-carry', 'I': '1,R,write-no-carry', '#': ',R,write-no-carry', 'z': 'R', 'c': 'c,R,write-no-carry-begin'}},
-    {name: "write-carry-begin", transitions: {'0': '1,L,move-begin', '1': '1,L,move-begin', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
-    {name: "write-no-carry-begin", transitions: {'0': '0,L,move-begin', '1': '0,L,move-begin', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
+    {name: "write-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-carry", "I": "1,R,write-carry", "#": ",R,write-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-carry-begin"}`},
+    {name: "write-no-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-no-carry", "I": "1,R,write-no-carry", "#": ",R,write-no-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-no-carry-begin"}`},
+    {name: "write-carry-begin", transitions: `{"0": "1,L,move-begin", "1": "1,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
+    {name: "write-no-carry-begin", transitions: `{"0": "0,L,move-begin", "1": "0,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
 
-    {name: "write-zero", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'c': 'R', 'z': 'z,R,write-zero-begin'}},
-    {name: "write-no-zero", transitions: {'0': 'R', '1': 'R', ' ': 'R', 'c': 'R', 'z': 'z,R,write-no-zero-begin'}},
-    {name: "write-zero-begin", transitions: {'0': '1,L,return-to-alu', '1': '1,L,return-to-alu', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
-    {name: "write-no-zero-begin", transitions: {'0': '0,L,return-to-alu', '1': '0,L,return-to-alu', ' ': 'L', 'c': 'L', 'z': 'L', '%': `%,R,${HALT}`}},
+    {name: "write-zero", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "${CARRY_FLAG_CHAR}": "R", "${ZERO_FLAG_CHAR}": "${ZERO_FLAG_CHAR},R,write-zero-begin"}`},
+    {name: "write-no-zero", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "${CARRY_FLAG_CHAR}": "R", "${ZERO_FLAG_CHAR}": "${ZERO_FLAG_CHAR},R,write-no-zero-begin"}`},
+    {name: "write-zero-begin", transitions: `{"0": "1,L,return-to-alu", "1": "1,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
+    {name: "write-no-zero-begin", transitions: `{"0": "0,L,return-to-alu", "1": "0,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
 
-    {name: "check-zero", transitions: {'0': 'R', '1': '1,R,write-no-zero', ' ': ',N,write-zero'}},
+    {name: "check-zero", transitions: `{"0": "R", "1": "1,R,write-no-zero", "${LAMBDA}": ",N,write-zero"}`},
 
     // инкремент
-    {name: "INC",   transitions: {'0': 'R',              '1': 'R',      ' ': `,L,INC-1`}},
-    {name: "INC-1", transitions: {'0': '1,N,write-no-carry', '1': '0,L,',   '%': `%,R,write-carry`}},
+    {name: "INC",   transitions: `{"0": "R",              "1": "R",      "${LAMBDA}": ",L,INC-1"}`},
+    {name: "INC-1", transitions: `{"0": "1,N,write-no-carry", "1": "0,L,",   "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
 
     // декремент
-    {name: "DEC",   transitions: {'0': 'R',              '1': 'R',           ' ': `,L,DEC-1`}},
-    {name: "DEC-1", transitions: {'0': '1,L,DEC-1', '1': '0,N,write-no-carry',   '%': `%,R,write-carry`}},
+    {name: "DEC",   transitions: `{"0": "R",              "1": "R",           "${LAMBDA}": ",L,DEC-1"}`},
+    {name: "DEC-1", transitions: `{"0": "1,L,DEC-1", "1": "0,N,write-no-carry",   "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
 
     // сложение двух чисел
-    {name: "ADD",       transitions: {'0': "R", '1': "R", ' ': ',L,ADD-check', 'I': "R", '#': "R", 'O': "R"}},
-    {name: "ADD-check", transitions: {'0': ',L,ADD-zero', '1': ',L,ADD-one', '#': ',L,write-no-carry', }},
-    {name: "ADD-zero",  transitions: {'0': "L", '1': "L", '#': '#,L,ADD-zero2' }},
-    {name: "ADD-one",   transitions: {'0': "L", '1': "L", '#': '#,L,ADD-one2', }},
-    {name: "ADD-zero2", transitions: {'0': 'O,N,ADD', '1': 'I,N,ADD', 'I': "L", '%': '%,R,ADD', 'O': "L"}},
-    {name: "ADD-one2",  transitions: {'0': 'I,N,ADD', '1': 'O,L,ADD-one3', 'I': "L", '%': '%,R,write-carry', 'O': "L"}},
-    {name: "ADD-one3",  transitions: {'0': '1,N,ADD', '1': '0,L,ADD-one3', '%': '%,R,write-carry'}},
+    {name: "ADD",       transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ADD-check", "I": "R", "#": "R", "O": "R"}`},
+    {name: "ADD-check", transitions: `{"0": ",L,ADD-zero", "1": ",L,ADD-one", "#": ",L,write-no-carry" }`},
+    {name: "ADD-zero",  transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-zero2" }`},
+    {name: "ADD-one",   transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-one2" }`},
+    {name: "ADD-zero2", transitions: `{"0": "O,N,ADD", "1": "I,N,ADD", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD", "O": "L"}`},
+    {name: "ADD-one2",  transitions: `{"0": "I,N,ADD", "1": "O,L,ADD-one3", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry", "O": "L"}`},
+    {name: "ADD-one3",  transitions: `{"0": "1,N,ADD", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
 ]
