@@ -111,7 +111,7 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         let value = this.PopStack()
         this.SetRegisterValue(args[0], value)
     }
-    else if (command == INC_CMD.name || command == DEC_CMD.name) {
+    else if (command == INC_CMD.name || command == DEC_CMD.name || command == NOT_CMD.name) {
         let value = this.GetRegisterValue(args[0])
         this.turing.Run("MOVE-BEGIN")
         this.turing.Run("MOVE-ALU")
@@ -119,7 +119,7 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         let result = this.turing.Run(command)
         this.SetRegisterValue(args[0], result)
     }
-    else if (command == ADD_CMD.name || command == SUB_CMD.name) {
+    else if ([ADD_CMD.name, SUB_CMD.name, AND_CMD.name, OR_CMD.name, XOR_CMD.name].indexOf(command) > -1) {
         let arg1 = this.GetRegisterValue(args[0])
         let arg2 = this.GetArgumentValue(args[1])
         this.turing.Run("MOVE-BEGIN")

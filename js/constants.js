@@ -218,4 +218,27 @@ const TURING_STATES = [
     {name: "SUB-sub1", transitions: `{"0": "I,L,SUB-sub-carry", "1": "O,N,SUB", "I": "L", "O": "L"}`},
     {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SUB", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SUB"}`},
     {name: "SUB-clear", transitions: `{"0": "L", "1": "L", "I": "1,L,SUB-clear", "O": "0,L,SUB-clear", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+
+    {name: "AND", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,AND-check"}`},
+    {name: "AND-check", transitions: `{"0": ",L,AND-left0", "1": ",L,AND-left1", "#": ",L,normalize"}`},
+    {name: "AND-zero", transitions: `{"0": "O,N,AND", "1": "O,N,AND", "I": "L", "O": "L"}`},
+    {name: "AND-one", transitions: `{"0": "O,N,AND", "1": "I,N,AND", "I": "L", "O": "L"}`},
+    {name: "AND-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,AND-zero"}`},
+    {name: "AND-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,AND-one"}`},
+
+    {name: "OR", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,OR-check"}`},
+    {name: "OR-check", transitions: `{"0": ",L,OR-left0", "1": ",L,OR-left1", "#": ",L,normalize"}`},
+    {name: "OR-zero", transitions: `{"0": "O,N,OR", "1": "I,N,OR", "I": "L", "O": "L"}`},
+    {name: "OR-one", transitions: `{"0": "I,N,OR", "1": "I,N,OR", "I": "L", "O": "L"}`},
+    {name: "OR-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,OR-zero"}`},
+    {name: "OR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,OR-one"}`},
+
+    {name: "XOR", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,XOR-check"}`},
+    {name: "XOR-check", transitions: `{"0": ",L,XOR-left0", "1": ",L,XOR-left1", "#": ",L,normalize"}`},
+    {name: "XOR-zero", transitions: `{"0": "O,N,XOR", "1": "I,N,XOR", "I": "L", "O": "L"}`},
+    {name: "XOR-one", transitions: `{"0": "I,N,XOR", "1": "O,N,XOR", "I": "L", "O": "L"}`},
+    {name: "XOR-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-zero"}`},
+    {name: "XOR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-one"}`},
+
+    {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",L,move-begin"}`},
 ]
