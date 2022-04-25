@@ -176,7 +176,7 @@ const TURING_STATES = [
 
     {name: "PUSH", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": "#,R,${HALT}"}`},
 
-    {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero"}`},
+    {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
     {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
 
     {name: "write-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-carry", "I": "1,R,write-carry", "#": ",R,write-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-carry-begin"}`},
@@ -241,4 +241,20 @@ const TURING_STATES = [
     {name: "XOR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-one"}`},
 
     {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",L,move-begin"}`},
+
+    {name: "SHR", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHR-test"}`},
+    {name: "SHR-test", transitions: `{"0": "1,L,SHR-test", "1": "0,L,SHR-pre", "#": ",R,SHR-clear"}`},
+    {name: "SHR-clear", transitions: `{"0": ",R,SHR-clear", "1": ",R,SHR-clear", "${LAMBDA}": "${LAMBDA},L,move-begin"}`},
+    {name: "SHR-pre", transitions: `{"0": "L", "1": "L", "#": "L", "${ALU_CHAR}": "${ALU_CHAR},R,SHR-make"}`},
+    {name: "SHR-make", transitions: `{"0": "0,R,SHR-zero", "1": "0,R,SHR-one"}`},
+    {name: "SHR-zero", transitions: `{"0": "R", "1": "0,R,SHR-one", "#": "#,R,SHR"}`},
+    {name: "SHR-one", transitions: `{"0": "1,R,SHR-zero", "1": "R", "#": "#,R,SHR"}`},
+
+    {name: "SHL", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHL-test"}`},
+    {name: "SHL-test", transitions: `{"0": "1,L,SHL-test", "1": "0,L,SHL-pre", "#": ",R,SHL-clear"}`},
+    {name: "SHL-clear", transitions: `{"0": ",R,SHL-clear", "1": ",R,SHL-clear", "${LAMBDA}": "${LAMBDA},L,move-begin"}`},
+    {name: "SHL-pre", transitions: `{"0": "L", "1": "L", "#": "#,L,SHL-make"}`},
+    {name: "SHL-make", transitions: `{"0": "0,L,SHL-zero", "1": "0,L,SHL-one"}`},
+    {name: "SHL-zero", transitions: `{"0": "L", "1": "0,L,SHL-one", "${ALU_CHAR}": "${ALU_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
+    {name: "SHL-one", transitions: `{"0": "1,L,SHL-zero", "1": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
 ]
