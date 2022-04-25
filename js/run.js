@@ -38,7 +38,7 @@ TuringCpu.prototype.Step = function() {
     if (this.taskQueue.length > 0)
         this.ProcessTask()
 
-    this.turing.ToHTML()
+    this.UpdateView()
 
     if (this.IsEnd()) {
         this.Stop()

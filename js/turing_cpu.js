@@ -4,6 +4,7 @@ function TuringCpu(bitDepth, memoryCount) {
     this.codeInput = new HighlightInput('code-editable-box', 'code-highlight-box', HIGHTLIGHT_RULES)
 
     this.InitControls()
+    this.InitRegisterBlocks()
     this.Compile()
     this.Reset()
     this.RunProcess()
@@ -22,7 +23,58 @@ TuringCpu.prototype.InitControls = function() {
     this.resetBtn.addEventListener('click', () => this.Reset())
     this.compileBtn.addEventListener('click', () => { this.Reset(); this.Compile() })
 
-    window.addEventListener('resize', () => this.turing.ToHTML())
+    window.addEventListener('resize', () => this.UpdateView())
+}
+
+TuringCpu.prototype.InitRegisterBlocks = function() {
+    let div = document.getElementById('values-box')
+    div.innerHTML = ''
+
+    this.registerBlocks = {}
+
+    for (let name of REGISTER_NAMES) {
+        let block = this.MakeRegisterBlock(name)
+        this.registerBlocks[name] = block
+        div.appendChild(block.div)
+    }
+}
+
+TuringCpu.prototype.MakeRegisterBlock = function(name) {
+    let div = document.createElement('div')
+    div.className = 'register-block'
+    div.style.background = REGISTER_COLORS[name].background
+    div.style.borderColor = REGISTER_COLORS[name].border
+
+    let nameBox = document.createElement('div')
+    let showBox = document.createElement('div')
+    let valueBox = document.createElement('div')
+    let decimalBox = document.createElement('div')
+
+    let label = document.createElement("label")
+    let checkbox = document.createElement("input")
+    checkbox.type = 'checkbox'
+    checkbox.id = `show-register-${name}-box`
+    checkbox.addEventListener('change', () => this.UpdateView())
+
+    label.innerHTML = 'Показать'
+    label.setAttribute('for', checkbox.id)
+
+    showBox.appendChild(checkbox)
+    showBox.appendChild(label)
+
+    nameBox.className = "register-name"
+    showBox.className = "register-show"
+    valueBox.className = "register-value"
+    decimalBox.className = "register-decimal-value"
+
+    nameBox.innerHTML = name
+
+    div.appendChild(nameBox)
+    div.appendChild(showBox)
+    div.appendChild(valueBox)
+    div.appendChild(decimalBox)
+
+    return {div, nameBox, showBox, valueBox, decimalBox}
 }
 
 TuringCpu.prototype.InitTuringALU = function() {
@@ -128,14 +180,15 @@ TuringCpu.prototype.InitTuring = function() {
     for (let char of PARTS_ORDER)
         word = word.concat(parts[char])
 
-    this.turing = new TuringMachine()
+    this.turing = new TuringMachine('machine-box')
     this.turing.SetWord(word.join(''))
-    this.turing.ToHTML()
 
     this.InitTuringMoves(TURING_ALPHABET)
 
     for (let state of TURING_STATES)
         this.turing.AddState(state.name, JSON.parse(state.transitions))
+
+    this.UpdateView()
 }
 
 TuringCpu.prototype.SetButtonState = function(button, enabled) {
@@ -259,4 +312,35 @@ TuringCpu.prototype.SetArgumentValue = function(arg, value) {
     else {
         throw `invalid argument for SetValue: "${arg}"`
     }
+}
+
+TuringCpu.prototype.GetRegisterValues = function() {
+    let registers = {}
+    let chars = this.turing.tape.positive
+
+    for (let i = 0; i < chars.length; i++) {
+        if (REGISTER_NAMES.indexOf(chars[i]) > -1)
+            registers[chars[i]] = chars.slice(i + 1, i + 1 + this.bitDepth).join('')
+    }
+
+    return registers
+}
+
+TuringCpu.prototype.UpdateView = function() {
+    let registers = []
+    let values = this.GetRegisterValues()
+
+    for (let name of REGISTER_NAMES) {
+        let value = values[name]
+        let decimal = Number.parseInt(value, 2)
+        let id = `show-register-${name}-box`
+
+        this.registerBlocks[name].valueBox.innerHTML = `${value}<sub>2</sub>`
+        this.registerBlocks[name].decimalBox.innerHTML = `${decimal}<sub>10</sub>`
+
+        if (document.getElementById(id).checked)
+            registers.push(name)
+    }
+
+    this.turing.ToHTML(registers)
 }

@@ -1,7 +1,8 @@
-function TuringMachine() {
+function TuringMachine(divId) {
     this.tape = new Tape()
     this.states = {}
     this.alphabet = new Set()
+    this.divId = divId
 }
 
 TuringMachine.prototype.AddState = function(stateName, state) {
@@ -87,11 +88,9 @@ TuringMachine.prototype.SetState = function(state) {
     this.state = state
 }
 
-TuringMachine.prototype.MakeTapeCell = function(index) {
+TuringMachine.prototype.MakeTapeCell = function(char, index) {
     let cell = document.createElement('div')
     cell.className = 'turing-tape-cell'
-
-    let char = this.tape.GetCharAt(index)
 
     if (this.tape.index == index) {
         cell.classList.add('turing-tape-current-cell')
@@ -116,7 +115,7 @@ TuringMachine.prototype.MakeTapeCell = function(index) {
     return cell
 }
 
-TuringMachine.prototype.MakeTapeHTML = function(div) {
+TuringMachine.prototype.MakeTapeHTML = function(div, showedRegisters) {
     let tapeDiv = document.createElement('div')
     tapeDiv.className = 'turing-tape'
 
@@ -127,12 +126,28 @@ TuringMachine.prototype.MakeTapeHTML = function(div) {
     let columns = Math.floor(width / TAPE_CELL_SIZE)
     let rows = Math.floor((cells + columns - 1) / columns)
 
+    let startBlock = null
+
     for (let i = 0; i < rows; i++) {
         let row = document.createElement('div')
         row.className = 'turing-tape-row'
 
-        for (let j = 0; j < columns; j++)
-            row.appendChild(this.MakeTapeCell(i * columns + j))
+        for (let j = 0; j < columns; j++) {
+            let index = i * columns + j
+            let char = this.tape.GetCharAt(index)
+            let cell = this.MakeTapeCell(char, index)
+
+            if (PARTS_ORDER.indexOf(char) > -1) {
+                startBlock = char
+            }
+            else if (char == LAMBDA) {
+                startBlock = null
+            }
+            else if (showedRegisters.indexOf(startBlock) > -1)
+                cell.style.background = REGISTER_COLORS[startBlock].background
+
+            row.appendChild(cell)
+        }
 
         tapeDiv.appendChild(row)
     }
@@ -140,8 +155,8 @@ TuringMachine.prototype.MakeTapeHTML = function(div) {
     div.appendChild(tapeDiv)
 }
 
-TuringMachine.prototype.ToHTML = function(divId = 'machine-box') {
-    let div = document.getElementById(divId)
+TuringMachine.prototype.ToHTML = function(showedRegisters) {
+    let div = document.getElementById(this.divId)
     div.innerHTML = ''
-    this.MakeTapeHTML(div)
+    this.MakeTapeHTML(div, showedRegisters)
 }

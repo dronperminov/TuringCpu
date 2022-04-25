@@ -36,7 +36,7 @@
 }
 
 .turing-tape-current-cell {
-    background: #b3e7ff;
+    background: #b3e7ff !important;
 }
 
 .turing-tape-system-cell {
