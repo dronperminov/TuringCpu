@@ -132,10 +132,7 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
         for (let char of chars) {
             let index = PARTS_ORDER.indexOf(char)
 
-            if (char == BEGIN_CHAR) {
-                leftStates[char] = `${char},R,${rightName}`
-            }
-            else if (index == -1 || index >= targetIndex)
+            if (index == -1 || index >= targetIndex)
                 leftStates[char] = char != move.char ? 'L' : `${char},R,${HALT}`
             else
                 leftStates[char] = `${char},R,${rightName}`
@@ -147,13 +144,6 @@ TuringCpu.prototype.InitTuringMoves = function(chars) {
         this.turing.AddState(move.name, leftStates)
         this.turing.AddState(`${rightName}`, rightStates)
     }
-
-    let beginState = {}
-
-    for (let char of chars)
-        beginState[char] = char != BEGIN_CHAR ? 'L' : `${HALT}`
-
-    this.turing.AddState('MOVE-BEGIN', beginState)
 }
 
 TuringCpu.prototype.InitTuring = function() {
@@ -168,7 +158,7 @@ TuringCpu.prototype.InitTuring = function() {
     parts[MEMORY_CHAR] = this.InitTuringMemory()
     parts[STACK_CHAR] = [STACK_CHAR]
 
-    let word = [BEGIN_CHAR]
+    let word = []
 
     for (let char of PARTS_ORDER)
         word = word.concat(parts[char])
@@ -181,6 +171,7 @@ TuringCpu.prototype.InitTuring = function() {
     for (let state of TURING_STATES)
         this.turing.AddState(state.name, JSON.parse(state.transitions))
 
+    this.turing.Run(`MOVE-REGISTER-${REGISTER_NAMES[0]}`)
     this.UpdateView()
 }
 

@@ -112,7 +112,7 @@ TuringMachine.prototype.MakeTapeCell = function(char, index) {
     else if (char == LAMBDA) {
         cell.classList.add('turing-tape-lambda-cell')
     }
-    else if ([BEGIN_CHAR, ALU_CHAR, MEMORY_CHAR, STACK_CHAR].indexOf(char) > -1) {
+    else if ([ALU_CHAR, MEMORY_CHAR, STACK_CHAR].indexOf(char) > -1) {
         cell.classList.add('turing-tape-system-cell')
     }
     else if (REGISTER_NAMES.indexOf(char) > -1) {
