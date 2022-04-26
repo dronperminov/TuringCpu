@@ -154,6 +154,17 @@ TuringMachine.prototype.MakeTapeCell = function(cell, char, index) {
 }
 
 TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
+    let tapeDiv = document.getElementById('tape-div')
+    let borders = this.tape.GetBorders()
+    let cells = borders.right - borders.left + 1
+    let width = tapeDiv.clientWidth
+
+    let columns = Math.floor(width / TAPE_CELL_SIZE)
+    let rows = Math.floor((cells + columns - 1) / columns)
+
+    if (columns != this.columns || rows != this.rows)
+        this.InitTapeHTML()
+
     let startBlock = null
 
     for (let i = 0; i < this.rows; i++) {
