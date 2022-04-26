@@ -17,6 +17,7 @@ TuringCpu.prototype.InitControls = function() {
     this.compileBtn = document.getElementById('compile-btn')
     this.stepByInstructionsBox = document.getElementById('step-by-instructions-box')
     this.skipArgumentsBox = document.getElementById('skip-arguments-box')
+    this.showStatesBox = document.getElementById('show-states-box')
 
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
@@ -340,5 +341,5 @@ TuringCpu.prototype.UpdateView = function() {
             showed.push(name)
     }
 
-    this.turing.ToHTML(showed)
+    this.turing.ToHTML(showed, this.showStatesBox.checked)
 }

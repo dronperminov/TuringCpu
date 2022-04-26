@@ -50,3 +50,36 @@
 .turing-tape-flag-cell {
     background: #a9ebb6;
 }
+
+.turing-states {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Consolas;
+    font-size: 18px;
+}
+
+.turing-states-row {
+    display: table-row;
+}
+
+.turing-states-cell {
+    border: 1px solid #000;
+    display: table-cell;
+    min-width: 40px;
+    padding: 5px;
+    text-align: center;
+}
+
+.turing-states-active-cell {
+    background: #2196f3;
+    color: #fff;
+}
+
+.turing-states-active-char {
+    background: #b3e7ff;
+}
+
+.turing-states-active-state {
+    background: #b3e7ff;
+}

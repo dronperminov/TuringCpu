@@ -21,7 +21,7 @@ body, head {
     grid-template-areas:
     "left-header right-header"
     "code view"
-    "left-footer right-footer";
+    "footer footer";
 }
 
 .controls {
@@ -30,8 +30,8 @@ body, head {
     padding: 5px;
 }
 
-.left-footer {
-    grid-area: left-footer;
+.footer {
+    grid-area: footer;
     background: #ddd;
     display: flex;
     align-items: center;
@@ -50,12 +50,8 @@ body, head {
     grid-area: right-header;
 }
 
-.right-footer {
-    grid-area: right-footer;
-    background: #ddd;
-}
-
 .view {
     grid-area: view;
     padding: 0 5px;
+    overflow-y: auto;
 }
