@@ -24,7 +24,7 @@ TuringCpu.prototype.InitControls = function() {
     this.resetBtn.addEventListener('click', () => this.Reset())
     this.compileBtn.addEventListener('click', () => { this.Reset(); this.Compile() })
 
-    window.addEventListener('resize', () => this.UpdateView())
+    window.addEventListener('resize', () => this.Resize())
 }
 
 TuringCpu.prototype.InitInfoBlocks = function() {
@@ -163,8 +163,9 @@ TuringCpu.prototype.InitTuring = function() {
     for (let char of PARTS_ORDER)
         word = word.concat(parts[char])
 
-    this.turing = new TuringMachine('machine-box')
+    this.turing = new TuringMachine()
     this.turing.SetWord(word.join(''))
+    this.turing.InitTapeHTML()
 
     this.InitTuringMoves(TURING_ALPHABET)
 
@@ -333,4 +334,9 @@ TuringCpu.prototype.UpdateView = function() {
     }
 
     this.turing.ToHTML(showed, this.showStatesBox.checked)
+}
+
+TuringCpu.prototype.Resize = function() {
+    this.turing.InitTapeHTML()
+    this.UpdateView()
 }

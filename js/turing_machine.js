@@ -1,8 +1,7 @@
-function TuringMachine(divId) {
+function TuringMachine() {
     this.tape = new Tape()
     this.states = {}
     this.alphabet = new Set()
-    this.divId = divId
 }
 
 TuringMachine.prototype.AddState = function(stateName, state) {
@@ -102,8 +101,34 @@ TuringMachine.prototype.SetState = function(state) {
     this.state = state
 }
 
-TuringMachine.prototype.MakeTapeCell = function(char, index) {
-    let cell = document.createElement('div')
+TuringMachine.prototype.InitTapeHTML = function() {
+    let tapeDiv = document.getElementById('tape-div')
+    tapeDiv.innerHTML = ''
+
+    let borders = this.tape.GetBorders()
+    let cells = borders.right - borders.left + 1
+    let width = tapeDiv.clientWidth
+
+    this.columns = Math.floor(width / TAPE_CELL_SIZE)
+    this.rows = Math.floor((cells + this.columns - 1) / this.columns)
+    this.tapeCells = []
+
+    for (let i = 0; i < this.rows; i++) {
+        let row = document.createElement('div')
+        row.className = 'turing-tape-row'
+
+        for (let j = 0; j < this.columns; j++) {
+            let cell = document.createElement('div')
+            cell.className = 'turing-tape-cell'
+            row.appendChild(cell)
+            this.tapeCells[i * this.columns + j] = cell
+        }
+
+        tapeDiv.appendChild(row)
+    }
+}
+
+TuringMachine.prototype.MakeTapeCell = function(cell, char, index) {
     cell.className = 'turing-tape-cell'
 
     if (this.tape.index == index) {
@@ -126,30 +151,18 @@ TuringMachine.prototype.MakeTapeCell = function(char, index) {
     }
 
     cell.innerHTML = (char == LAMBDA ? LAMBDA_CELL : char)
-    return cell
 }
 
-TuringMachine.prototype.MakeTapeHTML = function(div, showedBlocks) {
-    let tapeDiv = document.createElement('div')
-    tapeDiv.className = 'turing-tape'
-
-    let borders = this.tape.GetBorders()
-    let cells = borders.right - borders.left + 1
-
-    let width = div.clientWidth
-    let columns = Math.floor(width / TAPE_CELL_SIZE)
-    let rows = Math.floor((cells + columns - 1) / columns)
-
+TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
     let startBlock = null
 
-    for (let i = 0; i < rows; i++) {
-        let row = document.createElement('div')
-        row.className = 'turing-tape-row'
-
-        for (let j = 0; j < columns; j++) {
-            let index = i * columns + j
+    for (let i = 0; i < this.rows; i++) {
+        for (let j = 0; j < this.columns; j++) {
+            let index = i * this.columns + j
             let char = this.tape.GetCharAt(index)
-            let cell = this.MakeTapeCell(char, index)
+            let cell = this.tapeCells[index]
+
+            this.MakeTapeCell(cell, char, index)
 
             if (PARTS_ORDER.indexOf(char) > -1) {
                 startBlock = char
@@ -160,14 +173,10 @@ TuringMachine.prototype.MakeTapeHTML = function(div, showedBlocks) {
 
             if (showedBlocks.indexOf(startBlock) > -1)
                 cell.style.background = INFO_BLOCKS_COLORS[startBlock].background
-
-            row.appendChild(cell)
+            else
+                cell.style.background = ''
         }
-
-        tapeDiv.appendChild(row)
     }
-
-    div.appendChild(tapeDiv)
 }
 
 TuringMachine.prototype.MakeNamedRow = function(names, classNames = null) {
@@ -259,9 +268,12 @@ TuringMachine.prototype.GetCommandStates = function() {
     return {states: currStates, alphabet: currAlphabet}
 }
 
-TuringMachine.prototype.MakeStates = function(div) {
-    let states = document.createElement('div')
-    states.className = 'turing-states'
+TuringMachine.prototype.MakeStates = function(showStates) {
+    let states = document.getElementById('states-div')
+    states.innerHTML = ''
+
+    if (!showStates)
+        return
 
     let curr = this.GetCommandStates(this.state)
     let alphabet = Array.from(curr.alphabet)
@@ -270,15 +282,11 @@ TuringMachine.prototype.MakeStates = function(div) {
 
     for (let state of curr.states)
         states.appendChild(this.MakeStateRow(state, alphabet))
-
-    div.appendChild(states)
 }
 
 TuringMachine.prototype.ToHTML = function(showedBlocks, showStates) {
-    let div = document.getElementById(this.divId)
-    div.innerHTML = ''
-    this.MakeTapeHTML(div, showedBlocks)
+    this.MakeTapeHTML(showedBlocks)
 
-    if (showStates && this.state && !this.IsHalt(this.state))
-        this.MakeStates(div)
+    if (this.state && !this.IsHalt(this.state))
+        this.MakeStates(showStates)
 }
