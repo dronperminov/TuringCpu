@@ -1,31 +1,27 @@
 .values {
     margin: 0 -2px 10px -2px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
 }
 
-.register-block {
+.info-block {
     display: inline-block;
     text-align: center;
     padding: 5px 10px;
-    margin: 0 2px;
+    margin: 2px;
     border: 2px solid #000;
     border-radius: 5px;
     font-family: Consolas;
     cursor: pointer;
 }
 
-.register-name {
+.info-name {
     font-size: 20px;
-}
-
-.register-show {
     padding-bottom: 5px;
     border-bottom: 1px solid;
 }
 
-.register-value {
-    font-size: 18px;
-}
-
-.register-decimal-value {
+.info-value {
     font-size: 18px;
 }

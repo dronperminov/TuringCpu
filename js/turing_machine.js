@@ -115,7 +115,7 @@ TuringMachine.prototype.MakeTapeCell = function(char, index) {
     return cell
 }
 
-TuringMachine.prototype.MakeTapeHTML = function(div, showedRegisters) {
+TuringMachine.prototype.MakeTapeHTML = function(div, showedBlocks) {
     let tapeDiv = document.createElement('div')
     tapeDiv.className = 'turing-tape'
 
@@ -143,8 +143,9 @@ TuringMachine.prototype.MakeTapeHTML = function(div, showedRegisters) {
             else if (char == LAMBDA) {
                 startBlock = null
             }
-            else if (showedRegisters.indexOf(startBlock) > -1)
-                cell.style.background = REGISTER_COLORS[startBlock].background
+
+            if (showedBlocks.indexOf(startBlock) > -1)
+                cell.style.background = INFO_BLOCKS_COLORS[startBlock].background
 
             row.appendChild(cell)
         }
@@ -155,8 +156,8 @@ TuringMachine.prototype.MakeTapeHTML = function(div, showedRegisters) {
     div.appendChild(tapeDiv)
 }
 
-TuringMachine.prototype.ToHTML = function(showedRegisters) {
+TuringMachine.prototype.ToHTML = function(showedBlocks) {
     let div = document.getElementById(this.divId)
     div.innerHTML = ''
-    this.MakeTapeHTML(div, showedRegisters)
+    this.MakeTapeHTML(div, showedBlocks)
 }

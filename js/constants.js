@@ -4,15 +4,6 @@ const CARRY_FLAG = "CF"
 const FLAG_NAMES = [ZERO_FLAG, CARRY_FLAG]
 const REGISTER_NAMES = ["A", "B", "C", "D", "E", "F"]
 
-const REGISTER_COLORS = {
-    "A": { border: "hsl(0, 100%, 64%)", background: "hsl(0, 100%, 84%)"},
-    "B": { border: "hsl(146, 83%, 44%)", background: "hsl(146, 83%, 64%)"},
-    "C": { border: "hsl(44, 100%, 62%)", background: "hsl(44, 100%, 82%)"},
-    "D": { border: "hsl(212, 98%, 59%)", background: "hsl(212, 98%, 79%)"},
-    "E": { border: "hsl(187, 100%, 42%)", background: "hsl(187, 100%, 62%)"},
-    "F": { border: "hsl(240, 60%, 65%)", background: "hsl(240, 60%, 85%)"},
-}
-
 const REGISTER_TYPE = 'reg'
 const CONSTANT_TYPE = 'const'
 const ADDRESS_TYPE = 'address'
@@ -102,6 +93,17 @@ const HIGHTLIGHT_RULES = [
     {regex: new RegExp(`\\b(${REGISTER_NAMES.join('|')})\\b`, "g"), name: "register-code"},
     {regex: new RegExp(`\\b(${COMMANDS.map((cmd) => cmd.name).join('|')})\\b`, "gi"), name: "command-code"}
 ]
+
+const INFO_BLOCKS_COLORS = {
+    "A": { name: "A", border: "hsl(0, 100%, 64%)", background: "hsl(0, 100%, 84%)"},
+    "B": { name: "B", border: "hsl(146, 83%, 44%)", background: "hsl(146, 83%, 64%)"},
+    "C": { name: "C", border: "hsl(44, 100%, 62%)", background: "hsl(44, 100%, 82%)"},
+    "D": { name: "D", border: "hsl(212, 98%, 59%)", background: "hsl(212, 98%, 79%)"},
+    "E": { name: "E", border: "hsl(187, 100%, 42%)", background: "hsl(187, 100%, 62%)"},
+    "F": { name: "F", border: "hsl(240, 60%, 65%)", background: "hsl(240, 60%, 85%)"},
+    "z": { name: "ZF", border: "hsl(60, 60%, 65%)", background: "hsl(60, 60%, 85%)"},
+    "c": { name: "CF", border: "hsl(80, 60%, 65%)", background: "hsl(80, 60%, 85%)"},
+}
 
 function IsRegister(arg) {
     return REGISTER_NAMES.indexOf(arg) > -1

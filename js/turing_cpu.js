@@ -4,7 +4,7 @@ function TuringCpu(bitDepth, memoryCount) {
     this.codeInput = new HighlightInput('code-editable-box', 'code-highlight-box', HIGHTLIGHT_RULES)
 
     this.InitControls()
-    this.InitRegisterBlocks()
+    this.InitInfoBlocks()
     this.Compile()
     this.Reset()
     this.RunProcess()
@@ -26,29 +26,27 @@ TuringCpu.prototype.InitControls = function() {
     window.addEventListener('resize', () => this.UpdateView())
 }
 
-TuringCpu.prototype.InitRegisterBlocks = function() {
+TuringCpu.prototype.InitInfoBlocks = function() {
     let div = document.getElementById('values-box')
     div.innerHTML = ''
 
-    this.registerBlocks = {}
+    this.infoBlocks = {}
 
-    for (let name of REGISTER_NAMES) {
-        let block = this.MakeRegisterBlock(name)
-        this.registerBlocks[name] = block
+    for (let name of Object.keys(INFO_BLOCKS_COLORS)) {
+        let block = this.MakeInfoBlock(name)
+        this.infoBlocks[name] = block
         div.appendChild(block.div)
     }
 }
 
-TuringCpu.prototype.MakeRegisterBlock = function(name) {
+TuringCpu.prototype.MakeInfoBlock = function(name) {
     let div = document.createElement('div')
-    div.className = 'register-block'
-    div.style.background = REGISTER_COLORS[name].background
-    div.style.borderColor = REGISTER_COLORS[name].border
+    div.className = 'info-block'
+    div.style.background = INFO_BLOCKS_COLORS[name].background
+    div.style.borderColor = INFO_BLOCKS_COLORS[name].border
 
     let nameBox = document.createElement('div')
-    let showBox = document.createElement('div')
     let valueBox = document.createElement('div')
-    let decimalBox = document.createElement('div')
 
     let label = document.createElement("label")
     let checkbox = document.createElement("input")
@@ -56,25 +54,19 @@ TuringCpu.prototype.MakeRegisterBlock = function(name) {
     checkbox.id = `show-register-${name}-box`
     checkbox.addEventListener('change', () => this.UpdateView())
 
-    label.innerHTML = 'Показать'
+    label.innerHTML = INFO_BLOCKS_COLORS[name].name
     label.setAttribute('for', checkbox.id)
 
-    showBox.appendChild(checkbox)
-    showBox.appendChild(label)
+    nameBox.appendChild(checkbox)
+    nameBox.appendChild(label)
 
-    nameBox.className = "register-name"
-    showBox.className = "register-show"
-    valueBox.className = "register-value"
-    decimalBox.className = "register-decimal-value"
-
-    nameBox.innerHTML = name
+    nameBox.className = "info-name"
+    valueBox.className = "info-value"
 
     div.appendChild(nameBox)
-    div.appendChild(showBox)
     div.appendChild(valueBox)
-    div.appendChild(decimalBox)
 
-    return {div, nameBox, showBox, valueBox, decimalBox}
+    return {div, nameBox, valueBox}
 }
 
 TuringCpu.prototype.InitTuringALU = function() {
@@ -314,33 +306,39 @@ TuringCpu.prototype.SetArgumentValue = function(arg, value) {
     }
 }
 
-TuringCpu.prototype.GetRegisterValues = function() {
-    let registers = {}
+TuringCpu.prototype.GetInfoValues = function() {
+    let values = {}
     let chars = this.turing.tape.positive
 
     for (let i = 0; i < chars.length; i++) {
-        if (REGISTER_NAMES.indexOf(chars[i]) > -1)
-            registers[chars[i]] = chars.slice(i + 1, i + 1 + this.bitDepth).join('')
+        if (chars[i] in INFO_BLOCKS_COLORS) {
+            let len = REGISTER_NAMES.indexOf(chars[i]) > -1 ? this.bitDepth : 1
+            values[chars[i]] = chars.slice(i + 1, i + 1 + len).join('')
+        }
     }
 
-    return registers
+    return values
 }
 
 TuringCpu.prototype.UpdateView = function() {
-    let registers = []
-    let values = this.GetRegisterValues()
+    let showed = []
+    let values = this.GetInfoValues()
 
-    for (let name of REGISTER_NAMES) {
+    for (let name of Object.keys(INFO_BLOCKS_COLORS)) {
         let value = values[name]
         let decimal = Number.parseInt(value, 2)
         let id = `show-register-${name}-box`
 
-        this.registerBlocks[name].valueBox.innerHTML = `${value}<sub>2</sub>`
-        this.registerBlocks[name].decimalBox.innerHTML = `${decimal}<sub>10</sub>`
+        if (REGISTER_NAMES.indexOf(name) > -1) {
+            this.infoBlocks[name].valueBox.innerHTML = `${value}<sub>2</sub><br>${decimal}<sub>10</sub>`
+        }
+        else {
+            this.infoBlocks[name].valueBox.innerHTML = `${value}<br>${value == "1" ? "TRUE" : "FALSE"}`
+        }
 
         if (document.getElementById(id).checked)
-            registers.push(name)
+            showed.push(name)
     }
 
-    this.turing.ToHTML(registers)
+    this.turing.ToHTML(showed)
 }
