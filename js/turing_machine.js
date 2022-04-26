@@ -279,13 +279,7 @@ TuringMachine.prototype.GetCommandStates = function() {
     return {states: currStates, alphabet: currAlphabet}
 }
 
-TuringMachine.prototype.MakeStates = function(showStates) {
-    let states = document.getElementById('states-div')
-    states.innerHTML = ''
-
-    if (!showStates)
-        return
-
+TuringMachine.prototype.MakeStates = function(states) {
     let curr = this.GetCommandStates(this.state)
     let alphabet = Array.from(curr.alphabet)
 
@@ -298,6 +292,9 @@ TuringMachine.prototype.MakeStates = function(showStates) {
 TuringMachine.prototype.ToHTML = function(showedBlocks, showStates) {
     this.MakeTapeHTML(showedBlocks)
 
-    if (this.state && !this.IsHalt(this.state))
-        this.MakeStates(showStates)
+    let states = document.getElementById('states-div')
+    states.innerHTML = ''
+
+    if (showStates && this.state && !this.IsHalt(this.state))
+        this.MakeStates(states)
 }
