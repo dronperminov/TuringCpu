@@ -249,6 +249,13 @@ TuringMachine.prototype.GetCommandStates = function() {
         currStates.add(state)
     }
 
+    let indices = {}
+
+    for (let i = 0; i < TURING_STATES.length; i++)
+        indices[TURING_STATES[i].name] = i
+
+    currStates = Array.from(currStates).sort((a, b) => indices[a] - indices[b])
+
     return {states: currStates, alphabet: currAlphabet}
 }
 
