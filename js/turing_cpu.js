@@ -99,7 +99,15 @@ TuringCpu.prototype.InitTuringProgram = function() {
                 else
                     program.push(arg)
                 
-                program.push(args.length == 2 && arg == args[0] ? 'I' : LAMBDA)
+                if (args.length == 1 || arg == args[1]) {
+                    program.push(LAMBDA)
+                }
+                else if (instruction.command == MOV_CMD.name) {
+                    program.push('O')
+                }
+                else {
+                    program.push('I')
+                }
             }
         }
 

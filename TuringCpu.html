@@ -27,13 +27,19 @@
 ; https://github.com/dronperminov/TuringCpu
 ; Пример вычисления числа Фибоначчи по номеру в регистре A
 
-ADD A, F</textarea>
+INC A
+INC F
+INC A
+INC F
+INC A
+MUL A, F
+MOV B, A</textarea>
             </div>
         </div>
         <div class="footer">
             <label><input type="checkbox" id="step-by-instructions-box">Шагать по инструкциям</label>
             <label><input type="checkbox" id="skip-arguments-box" checked>Пропускать аргументы</label>
-            <label><input type="checkbox" id="show-states-box" checked>Показывать состояния</label>
+            <label><input type="checkbox" id="show-states-box">Показывать состояния</label>
         </div>
 
         <div class="right-header"></div>

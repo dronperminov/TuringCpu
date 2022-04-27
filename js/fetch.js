@@ -1,7 +1,3 @@
-TuringCpu.prototype.InitTuringFetchInc = function() {
-    
-}
-
 TuringCpu.prototype.WriteRegisterToALU = function(register, isBinary) {
     let end = isBinary ? '-#' : ''
     let moveEnd = {}
@@ -158,6 +154,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
 
     let fetchStates = {}
     fetchStates['#'] = `#,L,WRITE-BACK`
+    fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,WRITE-BACK`
     fetchStates[PROGRAM_END_CHAR] = `${HALT}`
 
     for (let register of REGISTER_NAMES) {
@@ -166,6 +163,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
         let argStates = {}
         argStates[LAMBDA] = `~,R,WRITE-REGISTER-${register}-TO-ALU`
         argStates['I'] = `~,R,WRITE-REGISTER-${register}-TO-ALU-#`
+        argStates['O'] = `${LAMBDA},R,FETCH`
         this.turing.AddState(`STEP-REGISTER-${register}-TO-ALU`, argStates)
     }
 
