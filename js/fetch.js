@@ -73,7 +73,7 @@ TuringCpu.prototype.AppendToALU = function(isBinary = false) {
         let moveStates = {}
         let writeStates = {}
 
-        for (let c of TURING_ALPHABET) {
+        for (let c of TURING_ALPHABET.concat('~')) {
             if (c != ALU_CHAR) {
                 moveStates[c] = 'R'
             }
@@ -102,6 +102,7 @@ TuringCpu.prototype.AppendToALU = function(isBinary = false) {
     states['0'] = `O,R,APPEND-0-TO-ALU${end}`
     states['1'] = `I,R,APPEND-1-TO-ALU${end}`
     states[`${LAMBDA}`] = `,N,${RETURN_RUN_STATE}`
+    states[`~`] = `,R,FETCH`
 
     this.turing.AddState(`APPEND-TO-ALU${end}`, states)
 
@@ -113,13 +114,28 @@ TuringCpu.prototype.AppendToALU = function(isBinary = false) {
 
     let returnStates = {}
 
-    for (let c of TURING_ALPHABET)
+    for (let c of TURING_ALPHABET.concat('~'))
         returnStates[c] = 'L'
 
     returnStates['O'] = `0,R,APPEND-TO-ALU${end}`
     returnStates['I'] = `1,R,APPEND-TO-ALU${end}`
 
     this.turing.AddState(`APPEND-TO-ALU${end}-RETURN`, returnStates)
+}
+
+TuringCpu.prototype.ConstArgToALU = function() {
+    let states1 = {}
+    states1['0'] = 'R'
+    states1['1'] = 'R'
+    states1[LAMBDA] = '~,L,CONST-ARG-TO-ALU-BEGIN'
+
+    let states2 = {}
+    states2['0'] = 'L'
+    states2['1'] = 'L'
+    states2[LAMBDA] = `${LAMBDA},R,APPEND-TO-ALU`
+
+    this.turing.AddState('CONST-ARG-TO-ALU', states1)
+    this.turing.AddState('CONST-ARG-TO-ALU-BEGIN', states2)
 }
 
 TuringCpu.prototype.WriteBack = function() {
@@ -147,6 +163,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
         this.WriteALUToRegister(register)
     }
 
+    this.ConstArgToALU()
     this.AppendToALU(true)
     this.AppendToALU(false)
     this.WriteBack()
@@ -154,6 +171,9 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
 
     let fetchStates = {}
     fetchStates['#'] = `#,L,WRITE-BACK`
+    fetchStates['0'] = `0,N,CONST-ARG-TO-ALU`
+    fetchStates['1'] = `1,N,CONST-ARG-TO-ALU`
+
     fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,WRITE-BACK`
     fetchStates[PROGRAM_END_CHAR] = `${HALT}`
 
@@ -162,8 +182,8 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
 
         let argStates = {}
         argStates[LAMBDA] = `~,R,WRITE-REGISTER-${register}-TO-ALU`
-        argStates['I'] = `~,R,WRITE-REGISTER-${register}-TO-ALU-#`
-        argStates['O'] = `${LAMBDA},R,FETCH`
+        argStates['1'] = `~,R,WRITE-REGISTER-${register}-TO-ALU-#`
+        argStates['0'] = `${LAMBDA},R,FETCH`
         this.turing.AddState(`STEP-REGISTER-${register}-TO-ALU`, argStates)
     }
 

@@ -88,7 +88,9 @@ TuringCpu.prototype.InitTuringProgram = function() {
             program.push(LAMBDA)
         }
         else {
-            for (let arg of args) {
+            for (let i = 0; i < args.length; i++) {
+                let arg = args[i]
+
                 if (IsAddress(arg)) {
                     program.push('&')
                     arg = arg.substr(1, arg.length - 2)
@@ -99,14 +101,14 @@ TuringCpu.prototype.InitTuringProgram = function() {
                 else
                     program.push(arg)
                 
-                if (args.length == 1 || arg == args[1]) {
+                if (args.length == 1 || i == 1) {
                     program.push(LAMBDA)
                 }
                 else if (instruction.command == MOV_CMD.name) {
-                    program.push('O')
+                    program.push('0')
                 }
                 else {
-                    program.push('I')
+                    program.push('1')
                 }
             }
         }
