@@ -165,6 +165,7 @@ TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
         this.InitTapeHTML()
 
     let startBlock = null
+    let skipProg = false
 
     for (let i = 0; i < this.rows; i++) {
         for (let j = 0; j < this.columns; j++) {
@@ -173,6 +174,12 @@ TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
             let cell = this.tapeCells[index]
 
             this.MakeTapeCell(cell, char, index)
+
+            if (char == PROGRAM_END_CHAR)
+                skipProg = true
+
+            if (!skipProg)
+                continue
 
             if (PARTS_ORDER.indexOf(char) > -1) {
                 startBlock = char

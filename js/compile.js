@@ -102,6 +102,8 @@ TuringCpu.prototype.ValidateLabels = function() {
 
         if (!(label in this.labels))
             this.CompileError(instruction.line, `Метка "${label}" не обнаружена`)
+
+        instruction.args[0] = this.labels[label]
     }
 }
 

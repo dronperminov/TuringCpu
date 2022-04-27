@@ -25,7 +25,8 @@ TuringCpu.prototype.Stop = function() {
 }
 
 TuringCpu.prototype.IsEnd = function() {
-    return this.programIndex >= this.program.length && this.taskQueue.length == 0
+    // return this.programIndex >= this.program.length && this.taskQueue.length == 0
+    return this.taskQueue.length == 0
 }
 
 TuringCpu.prototype.Step = function() {
@@ -60,33 +61,33 @@ TuringCpu.prototype.Reset = function(withCompilation = false) {
     this.InitTuring()
 }
 
-TuringCpu.prototype.ProcessJump = function(jmp, label) {
+TuringCpu.prototype.ProcessJump = function(jmp, index) {
     if (jmp == JMP_CMD.name) {
-        this.programIndex = this.labels[label]
+        this.programIndex = index
     }
     else if (jmp == JZ_CMD.name || jmp == JE_CMD.name) {
         if (this.GetFlag(ZERO_FLAG))
-            this.programIndex = this.labels[label]
+            this.programIndex = index
     }
     else if (jmp == JNZ_CMD.name || jmp == JNE_CMD.name) {
         if (!this.GetFlag(ZERO_FLAG))
-            this.programIndex = this.labels[label]
+            this.programIndex = index
     }
     else if (jmp == JC_CMD.name || jmp == JB_CMD.name || jmp == JNAE_CMD.name) {
         if (this.GetFlag(CARRY_FLAG))
-            this.programIndex = this.labels[label]
+            this.programIndex = index
     }
     else if (jmp == JNC_CMD.name || jmp == JAE_CMD.name || jmp == JNB_CMD.name) {
         if (!this.GetFlag(CARRY_FLAG))
-            this.programIndex = this.labels[label]
+            this.programIndex = index
     }
     else if (jmp == JA_CMD.name || jmp == JNBE_CMD.name) {
         if (!this.GetFlag(ZERO_FLAG) && !this.GetFlag(CARRY_FLAG))
-            this.programIndex = this.labels[label]
+            this.programIndex = index
     }
     else if (jmp == JBE_CMD.name || jmp == JNA_CMD.name) {
         if (this.GetFlag(ZERO_FLAG) || this.GetFlag(CARRY_FLAG))
-            this.programIndex = this.labels[label]
+            this.programIndex = index
     }
     else {
         throw `jump "${jmp}" not implemented`

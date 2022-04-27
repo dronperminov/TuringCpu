@@ -83,6 +83,13 @@ const COMMANDS = [
     JNA_CMD, JNAE_CMD, JNB_CMD, JNBE_CMD
 ]
 
+const ALU_COMMAND_NAMES = [
+    INC_CMD.name, DEC_CMD.name, NOT_CMD.name,
+    ADD_CMD.name, SUB_CMD.name, MUL_CMD.name, CMP_CMD.name,
+    AND_CMD.name, OR_CMD.name, XOR_CMD.name,
+    SHR_CMD.name, SHL_CMD.name
+]
+
 const CONSTANT_REGEXP = "\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"
 const LABEL_REGEXP = "[.a-zA-Z]\\w*"
 
@@ -149,6 +156,8 @@ const LAMBDA_CELL = 'λ'
 const LEFT_CELL = '‹'
 const RIGHT_CELL = '›'
 
+const PROGRAM_CHAR = 'PRG'
+const PROGRAM_END_CHAR = 'HLT'
 const ALU_CHAR = 'ALU'
 const ALU_CARRY_CHAR = '$'
 const ZERO_FLAG_CHAR = 'ZF'
@@ -156,21 +165,32 @@ const CARRY_FLAG_CHAR = 'CF'
 const MEMORY_CHAR = 'MEM'
 const STACK_CHAR = 'STK'
 
+const RUN_STATE = 'RUN'
+const RETURN_RUN_STATE = 'RETURN-RUN'
+const FIX_REGISTER_STATE = 'FIX-REGISTER'
+
 const PARTS_ORDER = [
-    MEMORY_CHAR,
+    PROGRAM_CHAR,
     ...REGISTER_NAMES,
     ALU_CHAR,
     ZERO_FLAG_CHAR,
     CARRY_FLAG_CHAR,
+    MEMORY_CHAR,
     STACK_CHAR
 ]
 
 const TURING_ALPHABET = [
     LAMBDA,
     '0', '1',
-    'O', 'I', '#',
+    'O', 'I', '#', '@',
+
+    PROGRAM_CHAR, PROGRAM_END_CHAR,
+    ...COMMANDS.map((v) => v.name),
+    '&',
+
     ALU_CHAR,
     ZERO_FLAG_CHAR, CARRY_FLAG_CHAR,
+
     MEMORY_CHAR,
     STACK_CHAR,
     ...REGISTER_NAMES
@@ -183,29 +203,29 @@ const TURING_STATES = [
     {name: "MEMORY-MOVE-begin", transitions: `{"0": "L", "1": "L", "#": "L", "I": "I,L,MEMORY-MOVE", "O": "L", "${LAMBDA}": "L"}`},
     {name: "MEMORY-MOVE-dec",   transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark", "${MEMORY_CHAR}": "${MEMORY_CHAR},R,MEMORY-MOVE-shift"}`},
     {name: "MEMORY-MOVE-shift", transitions: `{"0": ",R,MEMORY-MOVE-shift", "1": ",R,MEMORY-MOVE-shift", "I": ",R,MEMORY-MOVE-find"}`},
-    {name: "MEMORY-MOVE-find",  transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "#": "#,R,${HALT}", "O": "#,R,MEMORY-MOVE-find"}`},
+    {name: "MEMORY-MOVE-find",  transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "#": "#,R,${RETURN_RUN_STATE}", "O": "#,R,MEMORY-MOVE-find"}`},
 
     {name: "POP-init", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,POP-#"}`},
-    {name: "POP-#", transitions: `{"0": "L", "1": "L", "#": "#,R,${HALT}", "${STACK_CHAR}": "${STACK_CHAR},R,${HALT}"}`},
-    {name: "POP",        transitions: `{"0": "0,N,POP-clear", "1": "1,N,POP-clear", "${LAMBDA}": ",N,${HALT}"}`},
+    {name: "POP-#", transitions: `{"0": "L", "1": "L", "#": "#,R,${RETURN_RUN_STATE}", "${STACK_CHAR}": "${STACK_CHAR},R,${RETURN_RUN_STATE}"}`},
+    {name: "POP",        transitions: `{"0": "0,N,POP-clear", "1": "1,N,POP-clear", "${LAMBDA}": ",N,${RETURN_RUN_STATE}"}`},
     {name: "POP-clear",  transitions: `{"0": ",R,POP-clear", "1": ",R,POP-clear", "${LAMBDA}": ",L,POP-move"}`},
     {name: "POP-move",   transitions: `{"#": ",L,POP-begin", "${LAMBDA}": "L"}`},
-    {name: "POP-begin",  transitions: `{"0": "L", "1": "L", "#": "#,R,${HALT}", "${STACK_CHAR}": "${HALT}"}`},
+    {name: "POP-begin",  transitions: `{"0": "L", "1": "L", "#": "#,R,${RETURN_RUN_STATE}", "${STACK_CHAR}": "${RETURN_RUN_STATE}"}`},
 
-    {name: "PUSH", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": "#,R,${HALT}"}`},
+    {name: "PUSH", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": "#,R,${RETURN_RUN_STATE}"}`},
 
     {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
-    {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
+    {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
 
     {name: "write-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-carry", "I": "1,R,write-carry", "#": ",R,write-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-carry-begin"}`},
     {name: "write-no-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-no-carry", "I": "1,R,write-no-carry", "#": ",R,write-no-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-no-carry-begin"}`},
-    {name: "write-carry-begin", transitions: `{"0": "1,L,move-begin", "1": "1,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
-    {name: "write-no-carry-begin", transitions: `{"0": "0,L,move-begin", "1": "0,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
+    {name: "write-carry-begin", transitions: `{"0": "1,L,move-begin", "1": "1,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
+    {name: "write-no-carry-begin", transitions: `{"0": "0,L,move-begin", "1": "0,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
 
     {name: "write-zero", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "${CARRY_FLAG_CHAR}": "R", "${ZERO_FLAG_CHAR}": "${ZERO_FLAG_CHAR},R,write-zero-begin"}`},
     {name: "write-no-zero", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "${CARRY_FLAG_CHAR}": "R", "${ZERO_FLAG_CHAR}": "${ZERO_FLAG_CHAR},R,write-no-zero-begin"}`},
-    {name: "write-zero-begin", transitions: `{"0": "1,L,return-to-alu", "1": "1,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
-    {name: "write-no-zero-begin", transitions: `{"0": "0,L,return-to-alu", "1": "0,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${HALT}"}`},
+    {name: "write-zero-begin", transitions: `{"0": "1,L,return-to-alu", "1": "1,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
+    {name: "write-no-zero-begin", transitions: `{"0": "0,L,return-to-alu", "1": "0,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
 
     {name: "check-zero", transitions: `{"0": "R", "1": "1,R,write-no-zero", "${LAMBDA}": ",N,write-zero"}`},
     {name: "normalize", transitions: `{"0": "L", "1": "L", "I": "1,L,normalize", "O": "0,L,normalize", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
