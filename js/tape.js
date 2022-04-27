@@ -56,7 +56,7 @@ Tape.prototype.GetWord = function(endChar = LAMBDA) {
         let c = this.GetCharAt(index)
 
         if (c == endChar || c == LAMBDA)
-            return word.join('')
+            return word
 
         word.push(c)
     }

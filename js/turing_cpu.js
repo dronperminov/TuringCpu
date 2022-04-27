@@ -164,7 +164,7 @@ TuringCpu.prototype.InitTuring = function() {
         word = word.concat(parts[char])
 
     this.turing = new TuringMachine()
-    this.turing.SetWord(word.join(''))
+    this.turing.SetWord(word)
     this.turing.InitTapeHTML()
 
     this.InitTuringMoves(TURING_ALPHABET)
@@ -194,8 +194,9 @@ TuringCpu.prototype.SetRunButtonsState = function(enabled = true, withReset = fa
 }
 
 TuringCpu.prototype.HideAllLines = function() {
-    for (let instruction of this.program) {
-        let line = document.getElementById(instruction.lineId)
+    let lines = document.getElementsByClassName("code-line")
+
+    for (let line of lines) {
         line.classList.remove('active-line')
     }
 }
@@ -258,9 +259,9 @@ TuringCpu.prototype.ConstantToBits = function(value, result) {
     let bits = []
 
     for (; bits.length != this.bitDepth; value >>= 1)
-        bits.push(value & 1)
+        bits.push((value & 1) + '')
 
-    let constant = bits.reverse().join('')
+    let constant = bits.reverse()
     this.taskQueue.push({ type: READ_WORD_TASK, setWord: (word) => result(constant) })
 }
 

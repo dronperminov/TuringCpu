@@ -134,7 +134,7 @@ TuringCpu.prototype.ProcessInstruction = function(instruction) {
         this.GetRegisterValue(args[0], (word) => this.word1 = word)
         this.GetArgumentValue(args[1], (word) => this.word2 = word)
         this.taskQueue.push({ type: RUN_TASK, state: "MOVE-ALU", skip: true})
-        this.taskQueue.push({ type: WRITE_WORD_TASK, getWord: () => `${this.word1}#${this.word2}`})
+        this.taskQueue.push({ type: WRITE_WORD_TASK, getWord: () => this.word1.concat(['#']).concat(this.word2) })
         this.taskQueue.push({ type: RUN_TASK, state: command == CMP_CMD.name ? SUB_CMD.name : command})
 
         if (command != CMP_CMD.name) {
@@ -165,10 +165,12 @@ TuringCpu.prototype.ProcessTask = function() {
                 continue
         }
         else if (task.type == WRITE_WORD_TASK) {
-            this.turing.WriteWord(task.getWord())
+            let word = task.getWord()
+            this.turing.WriteWord(word)
         }
         else if (task.type == READ_WORD_TASK) {
-            task.setWord(this.turing.GetWord())
+            let word = this.turing.GetWord()
+            task.setWord(word)
         }
 
         this.taskQueue.shift()

@@ -101,8 +101,8 @@ const INFO_BLOCKS_COLORS = {
     "D": { name: "D", border: "hsl(212, 98%, 59%)", background: "hsl(212, 98%, 79%)"},
     "E": { name: "E", border: "hsl(187, 100%, 42%)", background: "hsl(187, 100%, 62%)"},
     "F": { name: "F", border: "hsl(240, 60%, 65%)", background: "hsl(240, 60%, 85%)"},
-    "z": { name: "ZF", border: "hsl(60, 60%, 65%)", background: "hsl(60, 60%, 85%)"},
-    "c": { name: "CF", border: "hsl(80, 60%, 65%)", background: "hsl(80, 60%, 85%)"},
+    "ZF": { name: "ZF", border: "hsl(60, 60%, 65%)", background: "hsl(60, 60%, 85%)"},
+    "CF": { name: "CF", border: "hsl(80, 60%, 65%)", background: "hsl(80, 60%, 85%)"},
 }
 
 function IsRegister(arg) {
@@ -143,19 +143,18 @@ const MOVE_NONE = "N"
 const MOVE_RIGHT = "R"
 const LAMBDA = ' '
 const HALT = "!"
-const HALT_OVERFLOW = "!C"
 
 const TAPE_CELL_SIZE = 40
 const LAMBDA_CELL = 'λ'
 const LEFT_CELL = '‹'
 const RIGHT_CELL = '›'
 
-const ALU_CHAR = '%'
+const ALU_CHAR = 'ALU'
 const ALU_CARRY_CHAR = '$'
-const ZERO_FLAG_CHAR = 'z'
-const CARRY_FLAG_CHAR = 'c'
-const MEMORY_CHAR = 'm'
-const STACK_CHAR = 's'
+const ZERO_FLAG_CHAR = 'ZF'
+const CARRY_FLAG_CHAR = 'CF'
+const MEMORY_CHAR = 'MEM'
+const STACK_CHAR = 'STK'
 
 const PARTS_ORDER = [
     MEMORY_CHAR,

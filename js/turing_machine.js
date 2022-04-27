@@ -29,7 +29,7 @@ TuringMachine.prototype.Clear = function() {
 }
 
 TuringMachine.prototype.IsHalt = function(state) {
-    return state == HALT || state == HALT_OVERFLOW
+    return state == HALT
 }
 
 TuringMachine.prototype.ParseCommand = function(state, currChar) {
@@ -53,9 +53,6 @@ TuringMachine.prototype.ParseCommand = function(state, currChar) {
     }
     else if (args[0] == HALT) {
         nextState = HALT
-    }
-    else if (args[0] == HALT_OVERFLOW) {
-        nextState = HALT_OVERFLOW
     }
     else {
         move = args[0]
@@ -120,6 +117,8 @@ TuringMachine.prototype.InitTapeHTML = function() {
         for (let j = 0; j < this.columns; j++) {
             let cell = document.createElement('div')
             cell.className = 'turing-tape-cell'
+            cell.style.width = `${TAPE_CELL_SIZE}px`
+            cell.style.height = `${TAPE_CELL_SIZE}px`
             row.appendChild(cell)
             this.tapeCells[i * this.columns + j] = cell
         }
