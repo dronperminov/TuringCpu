@@ -21,8 +21,8 @@ TuringCpu.prototype.InitControls = function() {
 
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
-    this.resetBtn.addEventListener('click', () => this.Reset())
-    this.compileBtn.addEventListener('click', () => { this.Reset(); this.Compile() })
+    this.resetBtn.addEventListener('click', () => this.Reset(false))
+    this.compileBtn.addEventListener('click', () => this.Reset(true))
 
     window.addEventListener('resize', () => this.Resize())
 }
@@ -194,8 +194,10 @@ TuringCpu.prototype.SetRunButtonsState = function(enabled = true, withReset = fa
 }
 
 TuringCpu.prototype.HideAllLines = function() {
-    for (let instruction of this.program)
-        instruction.line.classList.remove('active-line')
+    for (let instruction of this.program) {
+        let line = document.getElementById(instruction.lineId)
+        line.classList.remove('active-line')
+    }
 }
 
 TuringCpu.prototype.GetFlag = function(name) {

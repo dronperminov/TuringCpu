@@ -46,14 +46,18 @@ TuringCpu.prototype.Step = function() {
     }
 }
 
-TuringCpu.prototype.Reset = function() {
+TuringCpu.prototype.Reset = function(withCompilation = false) {
     this.Stop()
     this.SetRunButtonsState(true)
     this.HideAllLines()
-    this.InitTuring()
 
     this.programIndex = 0
     this.taskQueue = []
+
+    if (withCompilation)
+        this.Compile()
+
+    this.InitTuring()
 }
 
 TuringCpu.prototype.ProcessJump = function(jmp, label) {
@@ -92,7 +96,8 @@ TuringCpu.prototype.ProcessJump = function(jmp, label) {
 TuringCpu.prototype.ProcessInstruction = function(instruction) {
     console.log(instruction.command, instruction.args)
     this.HideAllLines()
-    instruction.line.classList.add('active-line')
+    let line = document.getElementById(instruction.lineId)
+    line.classList.add('active-line')
 
     let command = instruction.command
     let args = instruction.args

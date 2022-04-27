@@ -5,8 +5,9 @@ TuringCpu.prototype.ClearLine = function(line) {
     return line
 }
 
-TuringCpu.prototype.CompileError = function(lineDiv, error) {
-    lineDiv.classList.add('error-line')
+TuringCpu.prototype.CompileError = function(lineId, error) {
+    let line = document.getElementById(lineId)
+    line.classList.add('error-line')
     throw error
 }
 
@@ -18,10 +19,10 @@ TuringCpu.prototype.GetCommand = function(cmd) {
     return null
 }
 
-TuringCpu.prototype.ValidateArgs = function(command, args, lineDiv) {
+TuringCpu.prototype.ValidateArgs = function(command, args, lineId) {
     if (command.argTypes[0] == LABEL_TYPE) {
         if (!IsLabel(args[0]))
-            this.CompileError(lineDiv, `Некорректная метка команды ${command.name}: ${args[0]}`)
+            this.CompileError(lineId, `Некорректная метка команды ${command.name}: ${args[0]}`)
 
         return
     }
@@ -45,27 +46,27 @@ TuringCpu.prototype.ValidateArgs = function(command, args, lineDiv) {
     }
 
     if (command.args == 1) {
-        this.CompileError(lineDiv, `Некорректный тип аргумента команды ${command.name}. Ожидался один из следующих типов: ${correctArgs.join(', ')}`)
+        this.CompileError(lineId, `Некорректный тип аргумента команды ${command.name}. Ожидался один из следующих типов: ${correctArgs.join(', ')}`)
     }
     else {
-        this.CompileError(lineDiv, `Некорректные типы аргументов команды ${command.name}. Ожидалась одна из комбинаций: ${correctArgs.join(', ')}`)
+        this.CompileError(lineId, `Некорректные типы аргументов команды ${command.name}. Ожидалась одна из комбинаций: ${correctArgs.join(', ')}`)
     }
 }
 
-TuringCpu.prototype.ParseLabeledLine = function(line, lineDiv) {
+TuringCpu.prototype.ParseLabeledLine = function(line, lineId) {
     let parts = line.split(':')
     let label = parts[0]
 
     if (label.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) == null)
-        this.CompileError(lineDiv, `Некорректная метка ("${label}")`)
+        this.CompileError(lineId, `Некорректная метка ("${label}")`)
 
     this.labels[label] = this.program.length
 
     if (parts.length != 1)
-        this.ParseLine(this.ClearLine(parts[1]), lineDiv)
+        this.ParseLine(this.ClearLine(parts[1]), lineId)
 }
 
-TuringCpu.prototype.ParseLine = function(line, lineDiv) {
+TuringCpu.prototype.ParseLine = function(line, lineId) {
     if (line == "")
         return
 
@@ -73,23 +74,23 @@ TuringCpu.prototype.ParseLine = function(line, lineDiv) {
     let cmd = parts.shift()
     let args = parts.join(' ').split(/, */g)
 
-    let command = this.GetCommand(cmd, lineDiv)
+    let command = this.GetCommand(cmd, lineId)
 
     if (command == null)
-        this.CompileError(lineDiv, `Неизвестная команда "${cmd}"`)
+        this.CompileError(lineId, `Неизвестная команда "${cmd}"`)
 
     if (args.length == 1 && args[0] == '')
         args.pop()
 
     if (args.length == 1 && parts.length > 1)
-        this.CompileError(lineDiv, "Аргументы должны разделяться запятыми")
+        this.CompileError(lineId, "Аргументы должны разделяться запятыми")
 
     if (command.args != args.length)
-        this.CompileError(lineDiv, `Неверное число аргументов команды ${command.name}: ожидалось ${command.args}, а получено ${args.length}`)
+        this.CompileError(lineId, `Неверное число аргументов команды ${command.name}: ожидалось ${command.args}, а получено ${args.length}`)
 
-    this.ValidateArgs(command, args, lineDiv)
+    this.ValidateArgs(command, args, lineId)
 
-    this.program.push({ command: cmd, args: args, line: lineDiv, type: command.argTypes[0] == LABEL_TYPE ? LABEL_COMMAND : OTHER_COMMAND })
+    this.program.push({ command: cmd, args: args, lineId: lineId, type: command.argTypes[0] == LABEL_TYPE ? LABEL_COMMAND : OTHER_COMMAND })
 }
 
 TuringCpu.prototype.ValidateLabels = function() {
@@ -105,7 +106,6 @@ TuringCpu.prototype.ValidateLabels = function() {
 }
 
 TuringCpu.prototype.Compile = function() {
-    this.programIndex = 0
     this.program = []
     this.labels = {}
 
@@ -116,13 +116,13 @@ TuringCpu.prototype.Compile = function() {
 
         for (let i = 0; i < lines.length; i++) {
             let line = this.ClearLine(lines[i])
-            let lineDiv = document.getElementById(`code-line-${i}`)
+            let lineId = `code-line-${i}`
 
             if (line.match(/^.*:.*$/gi) != null) {
-                this.ParseLabeledLine(line, lineDiv)
+                this.ParseLabeledLine(line, lineId)
             }
             else {
-                this.ParseLine(line, lineDiv)
+                this.ParseLine(line, lineId)
             }
         }
 
