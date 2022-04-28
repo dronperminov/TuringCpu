@@ -70,6 +70,51 @@ TuringCpu.prototype.MakeInfoBlock = function(name) {
     return {div, nameBox, valueBox}
 }
 
+TuringCpu.prototype.LabelInstructionToProgramTape = function(instruction) {
+    let address = this.ConstantToBits(instruction.args[0] + '')
+    let program = [instruction.command]
+
+    if (instruction.command != JMP_CMD.name)
+        program.push(LAMBDA)
+
+    program = program.concat(address)
+    program.push(LAMBDA)
+    return program
+}
+
+TuringCpu.prototype.MainInstructionToProgramTape = function(instruction) {
+    let program = []
+    let args = instruction.args
+
+    for (let i = 0; i < args.length; i++) {
+        let arg = args[i]
+
+        if (IsAddress(arg)) {
+            program.push('&')
+            arg = arg.substr(1, arg.length - 2)
+        }
+
+        if (IsConstant(arg))
+            program = program.concat(this.ConstantToBits(arg, this.bitDepth))
+        else
+            program.push(arg)
+
+        if (args.length == 1 || i == 1) {
+            program.push(LAMBDA)
+        }
+        else if (instruction.command == MOV_CMD.name) {
+            program.push('0')
+        }
+        else {
+            program.push('1')
+        }
+    }
+
+    program.push(instruction.command)
+    program.push(LAMBDA)
+    return program
+}
+
 TuringCpu.prototype.InitTuringProgram = function() {
     let program = [PROGRAM_CHAR]
 
@@ -81,50 +126,16 @@ TuringCpu.prototype.InitTuringProgram = function() {
     labelDepth++
 
     for (let i = 0; i < labelDepth; i++)
-            program.push(LAMBDA)
+        program.push(LAMBDA)
 
-    for (let i = 0; i < this.program.length; i++) {
-        let instruction = this.program[i]
-        let args = instruction.args
+    for (let instruction of this.program) {
         program.push('#')
 
         if (instruction.type == LABEL_TYPE) {
-            let address = this.ConstantToBits(args[0] + '')
-            program.push(instruction.command)
-
-            if (instruction.command != JMP_CMD.name)
-                program.push(LAMBDA)
-
-            program = program.concat(address)
-            program.push(LAMBDA)
+            program = program.concat(this.LabelInstructionToProgramTape(instruction))
         }
         else {
-            for (let i = 0; i < args.length; i++) {
-                let arg = args[i]
-
-                if (IsAddress(arg)) {
-                    program.push('&')
-                    arg = arg.substr(1, arg.length - 2)
-                }
-
-                if (IsConstant(arg))
-                    program = program.concat(this.ConstantToBits(arg, this.bitDepth))
-                else
-                    program.push(arg)
-
-                if (args.length == 1 || i == 1) {
-                    program.push(LAMBDA)
-                }
-                else if (instruction.command == MOV_CMD.name) {
-                    program.push('0')
-                }
-                else {
-                    program.push('1')
-                }
-            }
-
-            program.push(instruction.command)
-            program.push(LAMBDA)
+            program = program.concat(this.MainInstructionToProgramTape(instruction))
         }
     }
 
