@@ -295,6 +295,7 @@ TuringCpu.prototype.CheckZeroFlag = function() {
 
     this.turing.AddState('CHECK-ZERO-FLAG', states)
     this.turing.AddState('WRITE-ZERO-FLAG', {'0': '0,L,WRITE-0-FLAG', '1': '1,L,WRITE-1-FLAG'})
+    this.turing.AddState('WRITE-NO-ZERO-FLAG', {'0': '0,L,WRITE-1-FLAG', '1': '1,L,WRITE-0-FLAG'})
 }
 
 TuringCpu.prototype.CheckCarryFlag = function() {
@@ -307,6 +308,40 @@ TuringCpu.prototype.CheckCarryFlag = function() {
 
     this.turing.AddState('CHECK-CARRY-FLAG', states)
     this.turing.AddState('WRITE-CARRY-FLAG', {'0': '0,L,WRITE-0-FLAG', '1': '1,L,WRITE-1-FLAG'})
+}
+
+TuringCpu.prototype.CheckCarryOrZeroFlags = function() {
+    let carry = {}
+    let zero = {}
+
+    for (let char of TURING_ALPHABET) {
+        carry[char] = 'R'
+        zero[char] = 'L'
+    }
+
+    carry[CARRY_FLAG_CHAR] = `${CARRY_FLAG_CHAR},R,WRITE-CARRY-OR-ZERO-FLAG`
+    zero[ZERO_FLAG_CHAR] = `${ZERO_FLAG_CHAR},R,WRITE-ZERO-FLAG`
+
+    this.turing.AddState('CHECK-CARRY-OR-ZERO-FLAG', carry)
+    this.turing.AddState('CHECK-CARRY-OR-ZERO-0', zero)
+    this.turing.AddState('WRITE-CARRY-OR-ZERO-FLAG', {'0': '0,L,CHECK-CARRY-OR-ZERO-0', '1': '1,L,WRITE-1-FLAG'})
+}
+
+TuringCpu.prototype.CheckNoCarryAndNoZeroFlags = function() {
+    let carry = {}
+    let zero = {}
+
+    for (let char of TURING_ALPHABET) {
+        carry[char] = 'R'
+        zero[char] = 'L'
+    }
+
+    carry[CARRY_FLAG_CHAR] = `${CARRY_FLAG_CHAR},R,WRITE-NO-CARRY-AND-NO-ZERO-FLAG`
+    zero[ZERO_FLAG_CHAR] = `${ZERO_FLAG_CHAR},R,WRITE-NO-ZERO-FLAG`
+
+    this.turing.AddState('CHECK-NO-CARRY-AND-NO-ZERO-FLAG', carry)
+    this.turing.AddState('CHECK-NO-CARRY-AND-NO-ZERO-0', zero)
+    this.turing.AddState('WRITE-NO-CARRY-AND-NO-ZERO-FLAG', {'0': '0,L,CHECK-NO-CARRY-AND-NO-ZERO-0', '1': '1,L,WRITE-0-FLAG'})
 }
 
 TuringCpu.prototype.JZ = function() {
@@ -341,6 +376,26 @@ TuringCpu.prototype.JC = function() {
     this.turing.AddState(`${JNC_CMD.name}`, statesNot)
 }
 
+TuringCpu.prototype.JA = function() {
+    let states = {}
+
+    states[LAMBDA] = `~,R,CHECK-NO-CARRY-AND-NO-ZERO-FLAG`
+    states['1'] = `${LAMBDA},R,${JMP_CMD.name}`
+    states['0'] = `${LAMBDA},R,${RETURN_RUN_STATE}`
+
+    this.turing.AddState(`${JA_CMD.name}`, states)
+}
+
+TuringCpu.prototype.JBE = function() {
+    let states = {}
+
+    states[LAMBDA] = `~,R,CHECK-CARRY-OR-ZERO-FLAG`
+    states['1'] = `${LAMBDA},R,${JMP_CMD.name}`
+    states['0'] = `${LAMBDA},R,${RETURN_RUN_STATE}`
+
+    this.turing.AddState(`${JBE_CMD.name}`, states)
+}
+
 TuringCpu.prototype.FetchJumps = function(fetchStates) {
     fetchStates[JMP_CMD.name] = `${JMP_CMD.name},R,${JMP_CMD.name}`
 
@@ -354,11 +409,19 @@ TuringCpu.prototype.FetchJumps = function(fetchStates) {
     // carry
     fetchStates[JC_CMD.name] = `${JC_CMD.name},R,${JC_CMD.name}`
     fetchStates[JB_CMD.name] = `${JB_CMD.name},R,${JC_CMD.name}`
-    fetchStates[JNAE_CMD.name] = `${JNAE_CMD.name},R,${JNC_CMD.name}`
+    fetchStates[JNAE_CMD.name] = `${JNAE_CMD.name},R,${JC_CMD.name}`
 
     fetchStates[JNC_CMD.name] = `${JNC_CMD.name},R,${JNC_CMD.name}`
     fetchStates[JAE_CMD.name] = `${JAE_CMD.name},R,${JNC_CMD.name}`
     fetchStates[JNB_CMD.name] = `${JNB_CMD.name},R,${JNC_CMD.name}`
+
+    // not carry and not zero
+    fetchStates[JA_CMD.name] = `${JA_CMD.name},R,${JA_CMD.name}`
+    fetchStates[JNBE_CMD.name] = `${JNBE_CMD.name},R,${JA_CMD.name}`
+
+    // carry or zero
+    fetchStates[JBE_CMD.name] = `${JBE_CMD.name},R,${JBE_CMD.name}`
+    fetchStates[JNA_CMD.name] = `${JNA_CMD.name},R,${JBE_CMD.name}`
 }
 
 TuringCpu.prototype.InitTuringFetchStates = function() {
@@ -379,11 +442,15 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.WriteFlag()
     this.CheckZeroFlag()
     this.CheckCarryFlag()
+    this.CheckCarryOrZeroFlags()
+    this.CheckNoCarryAndNoZeroFlags()
 
     this.DecAddress()
     this.Jump()
     this.JZ()
     this.JC()
+    this.JA()
+    this.JBE()
 
     let fetchStates = {}
     fetchStates['#'] = `#,L,WRITE-BACK`
