@@ -91,6 +91,10 @@ TuringCpu.prototype.InitTuringProgram = function() {
         if (instruction.type == LABEL_TYPE) {
             let address = this.ConstantToBits(args[0] + '')
             program.push(instruction.command)
+
+            if (instruction.command != JMP_CMD.name)
+                program.push(LAMBDA)
+
             program = program.concat(address)
             program.push(LAMBDA)
         }

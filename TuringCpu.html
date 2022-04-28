@@ -27,21 +27,27 @@
 ; https://github.com/dronperminov/TuringCpu
 ; Пример вычисления числа Фибоначчи по номеру в регистре A
 
-;JMP loop
-;MOV A, 5
-;loop:
-;MOV A, 3
-;MOV F, 6
-;DEC A
-;INC F
-;MUL A, F
-;MOV B, A
-;MOV A, A
-;MOV B, B
+JMP start
 
-loop:
-MOV A, 1
-JMP loop</textarea>
+.loop:
+    MOV D, B ; сохраняем предыдущий член последовательности
+    ADD B, C ; вычисляем новый
+    MOV C, D ; возвращаем сохранённый на место предыдущего
+    DEC A   ; уменьшаем номер
+    JNZ .loop
+
+    JMP end
+
+start:
+    MOV A, 11  ; номер числа Фибоначчи
+    MOV C, 0x1
+    CMP A, 12
+    CMP A, 11
+    CMP A, 10
+    JMP .loop
+
+end:
+    XOR A, B</textarea>
             </div>
         </div>
         <div class="footer">
@@ -70,7 +76,7 @@ JMP loop</textarea>
     <script src="js/tape.js"></script>
     <script src="js/turing_machine.js"></script>
     <script>
-        let bitDepth = 2
+        let bitDepth = 8
         let memoryCount = 15
         let cpu = new TuringCpu(bitDepth, memoryCount)
     </script>
