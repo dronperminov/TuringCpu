@@ -1,3 +1,21 @@
+TuringCpu.prototype.ClearALU = function() {
+    let move = {}
+    let clear = {}
+
+    for (let char of TURING_ALPHABET) {
+        move[char] = 'R'
+    }
+
+    move[ALU_CHAR] = `${ALU_CHAR},R,CLEAR-ALU-2`
+
+    clear['0'] = `${LAMBDA},R,CLEAR-ALU-2`
+    clear['1'] = `${LAMBDA},R,CLEAR-ALU-2`
+    clear[LAMBDA] = `${LAMBDA},L,${RETURN_RUN_STATE}`
+
+    this.turing.AddState('CLEAR-ALU', move)
+    this.turing.AddState('CLEAR-ALU-2', clear)
+}
+
 TuringCpu.prototype.WriteRegisterToALU = function(register, isBinary) {
     let end = isBinary ? '-#' : ''
     let moveEnd = {}
@@ -232,6 +250,22 @@ TuringCpu.prototype.FixBinaryArgs = function() {
     this.turing.AddState('FIX-BINARY-ARGS-SKIP', skip)
 }
 
+TuringCpu.prototype.FixCmpArgs = function() {
+    let states = {}
+    let skip = {}
+    let fix = {}
+
+    states[LAMBDA] = `${LAMBDA},L,FIX-CMP-ARGS-SKIP`
+
+    for (let char of [...REGISTER_NAMES, '0', '1'])
+        skip[char] = 'L'
+
+    skip[LAMBDA] = `1,L,CLEAR-ALU`
+
+    this.turing.AddState('FIX-CMP-ARGS', states)
+    this.turing.AddState('FIX-CMP-ARGS-SKIP', skip)
+}
+
 TuringCpu.prototype.FixMovArgs = function() {
     let states = {}
     let skip = {}
@@ -256,6 +290,8 @@ TuringCpu.prototype.WriteBack = function() {
 
     for (let command of BINARY_COMMAND_NAMES)
         states[command] = `${command},L,FIX-BINARY-ARGS`
+
+    states[CMP_CMD.name] = `${CMP_CMD.name},L,FIX-CMP-ARGS`
 
     this.turing.AddState('WRITE-BACK', states)
 }
@@ -431,6 +467,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
         this.WriteALUToRegister(register)
     }
 
+    this.ClearALU()
     this.ConstArgToALU()
     this.AppendToALU(true)
     this.AppendToALU(false)
@@ -438,6 +475,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.WriteResult()
     this.FixBinaryArgs()
     this.FixMovArgs()
+    this.FixCmpArgs()
 
     this.WriteFlag()
     this.CheckZeroFlag()
@@ -477,7 +515,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
         fetchStates[command] = `${command},R,STEP-${command}`
 
         let argStates = {}
-        argStates[LAMBDA] = `~,R,MOVE-ALU-${command}`
+        argStates[LAMBDA] = `~,R,MOVE-ALU-${command == CMP_CMD.name ? SUB_CMD.name : command}`
         this.turing.AddState(`STEP-${command}`, argStates)
 
         let states = {}
