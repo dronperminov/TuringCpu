@@ -81,6 +81,21 @@ TuringCpu.prototype.LabelInstructionToProgramTape = function(instruction) {
     return program
 }
 
+TuringCpu.prototype.StackInstructionToProgramTape = function(instruction) {
+    let arg = instruction.args[0]
+    let program = [instruction.command]
+
+    if (IsConstant(arg)) {
+        program = program.concat(this.ConstantToBits(arg, this.bitDepth))
+    }
+    else {
+        program.push(arg)
+    }
+
+    program.push(LAMBDA)
+    return program
+}
+
 TuringCpu.prototype.MainInstructionToProgramTape = function(instruction) {
     let program = []
     let args = instruction.args
@@ -132,6 +147,9 @@ TuringCpu.prototype.InitTuringProgram = function() {
 
         if (instruction.type == LABEL_TYPE) {
             program = program.concat(this.LabelInstructionToProgramTape(instruction))
+        }
+        else if (instruction.command == PUSH_CMD.name || instruction.command == POP_CMD.name) {
+            program = program.concat(this.StackInstructionToProgramTape(instruction))
         }
         else {
             program = program.concat(this.MainInstructionToProgramTape(instruction))
@@ -224,6 +242,7 @@ TuringCpu.prototype.InitTuringProgramStates = function() {
     let runState = {}
     let returnState = {}
     let fixRegister = {}
+    let fixOne = {}
 
     for (let char of TURING_ALPHABET) {
         returnState[char] = char != PROGRAM_CHAR ? 'L' : `${PROGRAM_CHAR},R,${RUN_STATE}`
@@ -242,9 +261,13 @@ TuringCpu.prototype.InitTuringProgramStates = function() {
     fixRegister['1'] = `R`
     fixRegister[LAMBDA] = `${LAMBDA},L,${RETURN_RUN_STATE}`
 
+    fixOne['O'] = `0,L,${RETURN_RUN_STATE}`
+    fixOne['I'] = `1,L,${RETURN_RUN_STATE}`
+
     this.turing.AddState(RUN_STATE, runState)
     this.turing.AddState(RETURN_RUN_STATE, returnState)
     this.turing.AddState(FIX_REGISTER_STATE, fixRegister)
+    this.turing.AddState(FIX_ONE_STATE, fixOne)
 }
 
 TuringCpu.prototype.InitTuring = function() {

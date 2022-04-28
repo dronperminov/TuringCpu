@@ -184,6 +184,7 @@ const STACK_CHAR = 'STK'
 const RUN_STATE = 'RUN'
 const RETURN_RUN_STATE = 'RETURN-RUN'
 const FIX_REGISTER_STATE = 'FIX-REGISTER'
+const FIX_ONE_STATE = 'FIX-ONE'
 const FETCH_STATE = 'FETCH'
 const WRITE_BACK_STATE = 'WRITE-BACK'
 const WRITE_RESULT_STATE = 'WRITE-RESULT'
@@ -223,15 +224,6 @@ const TURING_STATES = [
     {name: "MEMORY-MOVE-dec",   transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark", "${MEMORY_CHAR}": "${MEMORY_CHAR},R,MEMORY-MOVE-shift"}`},
     {name: "MEMORY-MOVE-shift", transitions: `{"0": ",R,MEMORY-MOVE-shift", "1": ",R,MEMORY-MOVE-shift", "I": ",R,MEMORY-MOVE-find"}`},
     {name: "MEMORY-MOVE-find",  transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "#": "#,R,${RETURN_RUN_STATE}", "O": "#,R,MEMORY-MOVE-find"}`},
-
-    {name: "POP-init", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,POP-#"}`},
-    {name: "POP-#", transitions: `{"0": "L", "1": "L", "#": "#,R,${RETURN_RUN_STATE}", "${STACK_CHAR}": "${STACK_CHAR},R,${RETURN_RUN_STATE}"}`},
-    {name: "POP",        transitions: `{"0": "0,N,POP-clear", "1": "1,N,POP-clear", "${LAMBDA}": ",N,${RETURN_RUN_STATE}"}`},
-    {name: "POP-clear",  transitions: `{"0": ",R,POP-clear", "1": ",R,POP-clear", "${LAMBDA}": ",L,POP-move"}`},
-    {name: "POP-move",   transitions: `{"#": ",L,POP-begin", "${LAMBDA}": "L"}`},
-    {name: "POP-begin",  transitions: `{"0": "L", "1": "L", "#": "#,R,${RETURN_RUN_STATE}", "${STACK_CHAR}": "${RETURN_RUN_STATE}"}`},
-
-    {name: "PUSH", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": "#,R,${RETURN_RUN_STATE}"}`},
 
     {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
     {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
