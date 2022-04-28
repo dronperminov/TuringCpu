@@ -51,6 +51,10 @@
     background: #a9ebb6;
 }
 
+.turing-tape-curr-instruction-cell {
+    background: #defee6;
+}
+
 .turing-states {
     display: table;
     width: 100%;

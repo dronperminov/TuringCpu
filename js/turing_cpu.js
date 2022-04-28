@@ -435,6 +435,17 @@ TuringCpu.prototype.GetInfoValues = function() {
         }
     }
 
+    let start = chars.lastIndexOf('@')
+    let end = chars.indexOf('#', start) - 1
+
+    if (start == -1 && chars[this.turing.tape.index] != PROGRAM_CHAR) {
+        start = chars.indexOf(PROGRAM_END_CHAR)
+        end = start
+    }
+
+    values['curr_begin'] = start
+    values['curr_end'] = Math.min(end, chars.indexOf(PROGRAM_END_CHAR))
+
     return values
 }
 
@@ -458,7 +469,7 @@ TuringCpu.prototype.UpdateView = function() {
             showed.push(name)
     }
 
-    this.turing.ToHTML(showed, this.showStatesBox.checked)
+    this.turing.ToHTML(showed, this.showStatesBox.checked, values['curr_begin'], values['curr_end'])
 }
 
 TuringCpu.prototype.Resize = function() {

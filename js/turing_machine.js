@@ -127,7 +127,7 @@ TuringMachine.prototype.InitTapeHTML = function() {
     }
 }
 
-TuringMachine.prototype.MakeTapeCell = function(cell, char, index) {
+TuringMachine.prototype.MakeTapeCell = function(cell, char, index, begin, end) {
     cell.className = 'turing-tape-cell'
 
     if (this.tape.index == index) {
@@ -149,10 +149,15 @@ TuringMachine.prototype.MakeTapeCell = function(cell, char, index) {
         cell.classList.add('turing-tape-light-cell')
     }
 
+    if (begin <= index && index <= end) {
+        cell.classList.add('turing-tape-curr-instruction-cell')
+    }
+
     cell.innerHTML = (char == LAMBDA ? LAMBDA_CELL : char)
 }
 
-TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
+TuringMachine.prototype.MakeTapeHTML = function(showedBlocks, currInstructionBegin, currInstructionEnd) {
+    console.log(currInstructionBegin, currInstructionEnd)
     let tapeDiv = document.getElementById('tape-div')
     let borders = this.tape.GetBorders()
     let cells = borders.right - borders.left + 1
@@ -173,7 +178,7 @@ TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
             let char = this.tape.GetCharAt(index)
             let cell = this.tapeCells[index]
 
-            this.MakeTapeCell(cell, char, index)
+            this.MakeTapeCell(cell, char, index, currInstructionBegin, currInstructionEnd)
 
             if (char == PROGRAM_END_CHAR)
                 skipProg = true
@@ -192,6 +197,7 @@ TuringMachine.prototype.MakeTapeHTML = function(showedBlocks) {
                 cell.style.background = INFO_BLOCKS_COLORS[startBlock].background
             else
                 cell.style.background = ''
+
         }
     }
 }
@@ -295,8 +301,8 @@ TuringMachine.prototype.MakeStates = function(states) {
         states.appendChild(this.MakeStateRow(state, alphabet))
 }
 
-TuringMachine.prototype.ToHTML = function(showedBlocks, showStates) {
-    this.MakeTapeHTML(showedBlocks)
+TuringMachine.prototype.ToHTML = function(showedBlocks, showStates, currInstructionBegin, currInstructionEnd) {
+    this.MakeTapeHTML(showedBlocks, currInstructionBegin, currInstructionEnd)
 
     let states = document.getElementById('states-div')
     states.innerHTML = ''
