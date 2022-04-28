@@ -55,6 +55,14 @@
     background: #defee6;
 }
 
+.turing-tape-command-cell {
+    color: #2196f3;
+}
+
+.turing-tape-register-command-cell {
+    color: #9c27b0;
+}
+
 .turing-states {
     display: table;
     width: 100%;

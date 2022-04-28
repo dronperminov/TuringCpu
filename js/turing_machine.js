@@ -127,7 +127,7 @@ TuringMachine.prototype.InitTapeHTML = function() {
     }
 }
 
-TuringMachine.prototype.MakeTapeCell = function(cell, char, index, begin, end) {
+TuringMachine.prototype.MakeTapeCell = function(cell, char, index, begin, end, skipProg) {
     cell.className = 'turing-tape-cell'
 
     if (this.tape.index == index) {
@@ -139,11 +139,17 @@ TuringMachine.prototype.MakeTapeCell = function(cell, char, index, begin, end) {
     else if ([ALU_CHAR, MEMORY_CHAR, STACK_CHAR].indexOf(char) > -1) {
         cell.classList.add('turing-tape-system-cell')
     }
-    else if (REGISTER_NAMES.indexOf(char) > -1) {
+    else if (REGISTER_NAMES.indexOf(char) > -1 && skipProg) {
         cell.classList.add('turing-tape-register-cell')
     }
     else if (char == ZERO_FLAG_CHAR || char == CARRY_FLAG_CHAR) {
         cell.classList.add('turing-tape-flag-cell')
+    }
+    else if (COMMANDS.map((v) => v.name).indexOf(char) > -1 && !skipProg) {
+        cell.classList.add('turing-tape-command-cell')
+    }
+    else if (REGISTER_NAMES.indexOf(char) > -1 && !skipProg) {
+        cell.classList.add('turing-tape-register-command-cell')
     }
     else if (char != '0' && char != '1') {
         cell.classList.add('turing-tape-light-cell')
@@ -177,7 +183,7 @@ TuringMachine.prototype.MakeTapeHTML = function(showedBlocks, currInstructionBeg
             let char = this.tape.GetCharAt(index)
             let cell = this.tapeCells[index]
 
-            this.MakeTapeCell(cell, char, index, currInstructionBegin, currInstructionEnd)
+            this.MakeTapeCell(cell, char, index, currInstructionBegin, currInstructionEnd, skipProg)
 
             if (char == PROGRAM_END_CHAR)
                 skipProg = true
