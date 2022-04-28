@@ -197,7 +197,7 @@ TuringCpu.prototype.AppendToALU = function(isBinary = false) {
     states['0'] = `O,R,APPEND-0-TO-ALU${end}`
     states['1'] = `I,R,APPEND-1-TO-ALU${end}`
     states[`${LAMBDA}`] = `,N,${RETURN_RUN_STATE}`
-    states[`~`] = `,R,FETCH`
+    states[`~`] = `,R,${FETCH_STATE}`
     states[JMP_CMD.name] = `${JMP_CMD.name},R,${JMP_CMD.name}`
 
     this.turing.AddState(`APPEND-TO-ALU${end}`, states)
@@ -244,7 +244,7 @@ TuringCpu.prototype.FixBinaryArgs = function() {
     for (let char of [...REGISTER_NAMES, '0', '1'])
         skip[char] = 'L'
 
-    skip[LAMBDA] = `1,L,WRITE-BACK`
+    skip[LAMBDA] = `1,L,${WRITE_BACK_STATE}`
 
     this.turing.AddState('FIX-BINARY-ARGS', states)
     this.turing.AddState('FIX-BINARY-ARGS-SKIP', skip)
@@ -276,7 +276,7 @@ TuringCpu.prototype.FixMovArgs = function() {
     for (let char of [...REGISTER_NAMES, '0', '1'])
         skip[char] = 'L'
 
-    skip[LAMBDA] = `0,L,WRITE-BACK`
+    skip[LAMBDA] = `0,L,${WRITE_BACK_STATE}`
 
     this.turing.AddState('FIX-MOV-ARGS', states)
     this.turing.AddState('FIX-MOV-ARGS-SKIP', skip)
@@ -286,14 +286,14 @@ TuringCpu.prototype.WriteBack = function() {
     let states = {}
 
     for (let char of TURING_ALPHABET)
-        states[char] = char != '@' ? 'L' : '@,R,WRITE-RESULT'
+        states[char] = char != '@' ? 'L' : `@,R,${WRITE_RESULT_STATE}`
 
     for (let command of BINARY_COMMAND_NAMES)
         states[command] = `${command},L,FIX-BINARY-ARGS`
 
     states[CMP_CMD.name] = `${CMP_CMD.name},L,FIX-CMP-ARGS`
 
-    this.turing.AddState('WRITE-BACK', states)
+    this.turing.AddState(WRITE_BACK_STATE, states)
 }
 
 TuringCpu.prototype.WriteResult = function() {
@@ -302,7 +302,7 @@ TuringCpu.prototype.WriteResult = function() {
     for (let register of REGISTER_NAMES)
         states[register] = `${register},R,WRITE-ALU-TO-REGISTER-${register}`
 
-    this.turing.AddState('WRITE-RESULT', states)
+    this.turing.AddState(WRITE_RESULT_STATE, states)
 }
 
 TuringCpu.prototype.WriteFlag = function() {
@@ -314,8 +314,8 @@ TuringCpu.prototype.WriteFlag = function() {
         write1[char] = 'L'
     }
 
-    write0['~'] = `0,L,FETCH`
-    write1['~'] = `1,L,FETCH`
+    write0['~'] = `0,L,${FETCH_STATE}`
+    write1['~'] = `1,L,${FETCH_STATE}`
 
     this.turing.AddState('WRITE-0-FLAG', write0)
     this.turing.AddState('WRITE-1-FLAG', write1)
@@ -460,6 +460,38 @@ TuringCpu.prototype.FetchJumps = function(fetchStates) {
     fetchStates[JNA_CMD.name] = `${JNA_CMD.name},R,${JBE_CMD.name}`
 }
 
+TuringCpu.prototype.FetchRegisters = function(fetchStates) {
+    for (let register of REGISTER_NAMES) {
+        fetchStates[register] = `${register},R,STEP-REGISTER-${register}-TO-ALU`
+
+        let argStates = {}
+        argStates[LAMBDA] = `~,R,WRITE-REGISTER-${register}-TO-ALU`
+        argStates['1'] = `~,R,WRITE-REGISTER-${register}-TO-ALU-#`
+        argStates['0'] = `${LAMBDA},R,${FETCH_STATE}`
+        this.turing.AddState(`STEP-REGISTER-${register}-TO-ALU`, argStates)
+    }
+}
+
+TuringCpu.prototype.FetchCommands = function(fetchStates) {
+
+    for (let command of ALU_COMMAND_NAMES) {
+        fetchStates[command] = `${command},R,STEP-${command}`
+
+        let argStates = {}
+        argStates[LAMBDA] = `~,R,MOVE-ALU-${command == CMP_CMD.name ? SUB_CMD.name : command}`
+        this.turing.AddState(`STEP-${command}`, argStates)
+
+        let states = {}
+
+        for (let char of TURING_ALPHABET)
+            states[char] = char != ALU_CHAR ? 'R' : `${ALU_CHAR},R,${command}`
+
+        this.turing.AddState(`MOVE-ALU-${command}`, states)
+    }
+
+    fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,FIX-MOV-ARGS`
+}
+
 TuringCpu.prototype.InitTuringFetchStates = function() {
     for (let register of REGISTER_NAMES) {
         this.WriteRegisterToALU(register, false)
@@ -491,40 +523,14 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.JBE()
 
     let fetchStates = {}
-    fetchStates['#'] = `#,L,WRITE-BACK`
+    fetchStates['#'] = `#,L,${WRITE_BACK_STATE}`
     fetchStates['0'] = `0,N,CONST-ARG-TO-ALU`
     fetchStates['1'] = `1,N,CONST-ARG-TO-ALU`
-
-    fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,FIX-MOV-ARGS`
-
-    this.FetchJumps(fetchStates)
-
     fetchStates[PROGRAM_END_CHAR] = `${HALT}`
 
-    for (let register of REGISTER_NAMES) {
-        fetchStates[register] = `${register},R,STEP-REGISTER-${register}-TO-ALU`
+    this.FetchJumps(fetchStates)
+    this.FetchRegisters(fetchStates)
+    this.FetchCommands(fetchStates)
 
-        let argStates = {}
-        argStates[LAMBDA] = `~,R,WRITE-REGISTER-${register}-TO-ALU`
-        argStates['1'] = `~,R,WRITE-REGISTER-${register}-TO-ALU-#`
-        argStates['0'] = `${LAMBDA},R,FETCH`
-        this.turing.AddState(`STEP-REGISTER-${register}-TO-ALU`, argStates)
-    }
-
-    for (let command of ALU_COMMAND_NAMES) {
-        fetchStates[command] = `${command},R,STEP-${command}`
-
-        let argStates = {}
-        argStates[LAMBDA] = `~,R,MOVE-ALU-${command == CMP_CMD.name ? SUB_CMD.name : command}`
-        this.turing.AddState(`STEP-${command}`, argStates)
-
-        let states = {}
-
-        for (let char of TURING_ALPHABET)
-            states[char] = char != ALU_CHAR ? 'R' : `${ALU_CHAR},R,${command}`
-
-        this.turing.AddState(`MOVE-ALU-${command}`, states)
-    }
-
-    this.turing.AddState('FETCH', fetchStates)
+    this.turing.AddState(FETCH_STATE, fetchStates)
 }

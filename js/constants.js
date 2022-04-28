@@ -184,6 +184,9 @@ const STACK_CHAR = 'STK'
 const RUN_STATE = 'RUN'
 const RETURN_RUN_STATE = 'RETURN-RUN'
 const FIX_REGISTER_STATE = 'FIX-REGISTER'
+const FETCH_STATE = 'FETCH'
+const WRITE_BACK_STATE = 'WRITE-BACK'
+const WRITE_RESULT_STATE = 'WRITE-RESULT'
 
 const PARTS_ORDER = [
     PROGRAM_CHAR,
@@ -348,7 +351,3 @@ const TURING_STATES = [
     {name: "SHL-zero", transitions: `{"0": "L", "1": "0,L,SHL-one", "${ALU_CHAR}": "${ALU_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
     {name: "SHL-one", transitions: `{"0": "1,L,SHL-zero", "1": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
 ]
-
-const RUN_TASK = 'run'
-const WRITE_WORD_TASK = 'write-word'
-const READ_WORD_TASK = 'read-word'
