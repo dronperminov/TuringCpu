@@ -73,8 +73,14 @@ TuringCpu.prototype.MakeInfoBlock = function(name) {
 TuringCpu.prototype.InitTuringProgram = function() {
     let program = [PROGRAM_CHAR]
 
-    program.push(LAMBDA)
-    for (let i = 0; i < this.bitDepth; i++)
+    let labelDepth = 0
+
+    while ((1 << labelDepth) < this.program.length)
+        labelDepth++
+
+    console.log(labelDepth, this.program.length)
+
+    for (let i = 0; i < labelDepth; i++)
             program.push(LAMBDA)
 
     for (let i = 0; i < this.program.length; i++) {
@@ -84,6 +90,7 @@ TuringCpu.prototype.InitTuringProgram = function() {
 
         if (instruction.type == LABEL_TYPE) {
             let address = this.ConstantToBits(args[0] + '')
+            program.push(instruction.command)
             program = program.concat(address)
             program.push(LAMBDA)
         }
@@ -95,12 +102,12 @@ TuringCpu.prototype.InitTuringProgram = function() {
                     program.push('&')
                     arg = arg.substr(1, arg.length - 2)
                 }
-                
+
                 if (IsConstant(arg))
-                    program = program.concat(this.ConstantToBits(arg))
+                    program = program.concat(this.ConstantToBits(arg, this.bitDepth))
                 else
                     program.push(arg)
-                
+
                 if (args.length == 1 || i == 1) {
                     program.push(LAMBDA)
                 }
@@ -111,10 +118,10 @@ TuringCpu.prototype.InitTuringProgram = function() {
                     program.push('1')
                 }
             }
-        }
 
-        program.push(instruction.command)
-        program.push(LAMBDA)
+            program.push(instruction.command)
+            program.push(LAMBDA)
+        }
     }
 
     program.push('#')
@@ -208,7 +215,7 @@ TuringCpu.prototype.InitTuringProgramStates = function() {
         returnState[char] = char != PROGRAM_CHAR ? 'L' : `${PROGRAM_CHAR},R,${RUN_STATE}`
         runState[char] = 'R'
     }
-    
+
     returnState['~'] = `${LAMBDA},R,FETCH`
 
     runState['#'] = '@,R,FETCH'
@@ -319,7 +326,7 @@ TuringCpu.prototype.SetMemoryValue = function(getWord) {
     this.taskQueue.push({type: WRITE_WORD_TASK, getWord: getWord, skip: true})
 }
 
-TuringCpu.prototype.ConstantToBits = function(value) {
+TuringCpu.prototype.ConstantToBits = function(value, bitDepth = -1) {
     if (value.startsWith('0b')) {
         value = Number.parseInt(value.substr(2), 2)
     }
@@ -341,8 +348,17 @@ TuringCpu.prototype.ConstantToBits = function(value) {
 
     let bits = []
 
-    for (; bits.length != this.bitDepth; value >>= 1)
-        bits.push((value & 1) + '')
+    if (bitDepth > -1) {
+        for (; bits.length != bitDepth; value >>= 1)
+            bits.push((value & 1) + '')
+    }
+    else {
+        for (; value != 0; value >>= 1)
+            bits.push((value & 1) + '')
+
+        if (bits.length == 0)
+            bits.push('0')
+    }
 
     return bits.reverse()
 }
@@ -354,7 +370,7 @@ TuringCpu.prototype.AddressToBits = function(arg, setWord) {
         this.GetRegisterValue(address, setWord)
     }
     else {
-        let constant = this.ConstantToBits(address)
+        let constant = this.ConstantToBits(address, this.bitDepth)
         this.taskQueue.push({ type: READ_WORD_TASK, setWord: (word) => setWord(constant) })
     }
 }
@@ -364,7 +380,7 @@ TuringCpu.prototype.GetArgumentValue = function(arg, setWord) {
         this.GetRegisterValue(arg, setWord)
     }
     else if (IsConstant(arg)) {
-        let constant = this.ConstantToBits(arg)
+        let constant = this.ConstantToBits(arg, this.bitDepth)
         this.taskQueue.push({ type: READ_WORD_TASK, setWord: (word) => setWord(constant) })
     }
     else {

@@ -27,16 +27,17 @@
 ; https://github.com/dronperminov/TuringCpu
 ; Пример вычисления числа Фибоначчи по номеру в регистре A
 
+JMP loop
 MOV A, 5
-;INC A
-;INC F
-;INC A
-;INC F
-;INC A
-;MUL A, F
-;MOV B, A
-;MOV A, A
-;MOV B, B</textarea>
+loop:
+MOV A, 3
+MOV F, 6
+DEC A
+INC F
+MUL A, F
+MOV B, A
+MOV A, A
+MOV B, B</textarea>
             </div>
         </div>
         <div class="footer">

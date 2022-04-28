@@ -61,9 +61,87 @@ TuringCpu.prototype.WriteALUToRegister = function(register) {
 
     this.turing.AddState(`WRITE-0-TO-REGISTER-${register}-2`, writeAlu02)
     this.turing.AddState(`WRITE-1-TO-REGISTER-${register}-2`, writeAlu12)
-    
+
     this.turing.AddState(`WRITE-NORM-TO-REGISTER-${register}`, writeNorm)
     this.turing.AddState(`WRITE-NORM-TO-REGISTER-${register}-2`, writeNorm2)
+}
+
+TuringCpu.prototype.DecAddress = function() {
+    let moveStates = {}
+    let decStates = {}
+    let decClean = {}
+    let markStates = {}
+    let backStates = {}
+
+    moveStates['0'] = 'R'
+    moveStates['1'] = 'R'
+    moveStates[LAMBDA] = `${LAMBDA},L,DEC-ADDRESS-2`
+
+    decStates['1'] = '0,R,MARK-ADDRESS'
+    decStates['0'] = '1,L,DEC-ADDRESS-2'
+    decStates[PROGRAM_CHAR] = `${PROGRAM_CHAR},R,DEC-ADDRESS-CLEAN`
+
+    decClean['0'] = `${LAMBDA},R,DEC-ADDRESS-CLEAN`
+    decClean['1'] = `${LAMBDA},R,DEC-ADDRESS-CLEAN`
+    decClean[LAMBDA] = `${LAMBDA},R,${RUN_STATE}`
+    decClean['#'] = `${LAMBDA},N,${RUN_STATE}`
+
+    for (let char of TURING_ALPHABET) {
+        markStates[char] = 'R'
+        backStates[char] = 'L'
+    }
+
+    markStates['#'] = `@,L,BACK-TO-ADDRESS`
+
+    backStates[PROGRAM_CHAR] = `${PROGRAM_CHAR},R,DEC-ADDRESS`
+
+    this.turing.AddState('DEC-ADDRESS', moveStates)
+    this.turing.AddState('DEC-ADDRESS-2', decStates)
+    this.turing.AddState('DEC-ADDRESS-CLEAN', decClean)
+    this.turing.AddState('MARK-ADDRESS', markStates)
+    this.turing.AddState('BACK-TO-ADDRESS', backStates)
+}
+
+TuringCpu.prototype.Jump = function() {
+    let states = {}
+    let moveStates = {}
+    let backStates = {}
+
+    states['O'] = `R`
+    states['I'] = `R`
+    states['0'] = `O,L,${JMP_CMD.name}-COPY-0-ADDRESS`
+    states['1'] = `I,L,${JMP_CMD.name}-COPY-1-ADDRESS`
+    states[LAMBDA] = `${LAMBDA},L,${JMP_CMD.name}-MOVE-ADDRESS`
+
+
+    for (let char of TURING_ALPHABET) {
+        backStates[char] = char == 'O' || char == 'I' ? `${char},R,${JMP_CMD.name}` : 'R'
+        moveStates[char] = 'L'
+    }
+
+    moveStates['I'] = `1,L,${JMP_CMD.name}-MOVE-ADDRESS`
+    moveStates['O'] = `0,L,${JMP_CMD.name}-MOVE-ADDRESS`
+    moveStates['@'] = `#,L,${JMP_CMD.name}-MOVE-ADDRESS`
+    moveStates[PROGRAM_CHAR] = `${PROGRAM_CHAR},R,DEC-ADDRESS`
+
+    for (let digit of ['0', '1']) {
+        let copyStates = {}
+        let copy2States = {}
+
+        copy2States[LAMBDA] = `${digit},R,BACK-TO-JUMP`
+        copy2States['0'] = 'R'
+        copy2States['1'] = 'R'
+
+        for (let char of TURING_ALPHABET)
+            copyStates[char] = char != PROGRAM_CHAR ? 'L' : `${PROGRAM_CHAR},R,${JMP_CMD.name}-COPY-${digit}-ADDRESS-2`
+
+        this.turing.AddState(`${JMP_CMD.name}-COPY-${digit}-ADDRESS`, copyStates)
+        this.turing.AddState(`${JMP_CMD.name}-COPY-${digit}-ADDRESS-2`, copy2States)
+    }
+
+    this.turing.AddState(JMP_CMD.name, states)
+    this.turing.AddState(`${JMP_CMD.name}-MOVE-ADDRESS`, moveStates)
+    this.turing.AddState('BACK-TO-JUMP', backStates)
 }
 
 TuringCpu.prototype.AppendToALU = function(isBinary = false) {
@@ -103,6 +181,7 @@ TuringCpu.prototype.AppendToALU = function(isBinary = false) {
     states['1'] = `I,R,APPEND-1-TO-ALU${end}`
     states[`${LAMBDA}`] = `,N,${RETURN_RUN_STATE}`
     states[`~`] = `,R,FETCH`
+    states[JMP_CMD.name] = `${JMP_CMD.name},R,${JMP_CMD.name}`
 
     this.turing.AddState(`APPEND-TO-ALU${end}`, states)
 
@@ -169,12 +248,16 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.WriteBack()
     this.WriteResult()
 
+    this.DecAddress()
+    this.Jump()
+
     let fetchStates = {}
     fetchStates['#'] = `#,L,WRITE-BACK`
     fetchStates['0'] = `0,N,CONST-ARG-TO-ALU`
     fetchStates['1'] = `1,N,CONST-ARG-TO-ALU`
 
     fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,WRITE-BACK`
+    fetchStates[JMP_CMD.name] = `${JMP_CMD.name},R,${JMP_CMD.name}`
     fetchStates[PROGRAM_END_CHAR] = `${HALT}`
 
     for (let register of REGISTER_NAMES) {
