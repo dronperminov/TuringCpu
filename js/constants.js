@@ -2,7 +2,7 @@ const ZERO_FLAG = "ZF"
 const CARRY_FLAG = "CF"
 
 const FLAG_NAMES = [ZERO_FLAG, CARRY_FLAG]
-const REGISTER_NAMES = ["A", "B", "C", "D", "E", "F"]
+const REGISTER_NAMES = ["A", "B"]//, "C", "D", "E", "F"]
 
 const REGISTER_TYPE = 'reg'
 const CONSTANT_TYPE = 'const'
@@ -83,11 +83,19 @@ const COMMANDS = [
     JNA_CMD, JNAE_CMD, JNB_CMD, JNBE_CMD
 ]
 
-const ALU_COMMAND_NAMES = [
+const UNARY_COMMAND_NAMES = [
     INC_CMD.name, DEC_CMD.name, NOT_CMD.name,
+]
+
+const BINARY_COMMAND_NAMES = [
     ADD_CMD.name, SUB_CMD.name, MUL_CMD.name, CMP_CMD.name,
     AND_CMD.name, OR_CMD.name, XOR_CMD.name,
     SHR_CMD.name, SHL_CMD.name
+]
+
+const ALU_COMMAND_NAMES = [
+    ...UNARY_COMMAND_NAMES,
+    ...BINARY_COMMAND_NAMES
 ]
 
 const CONSTANT_REGEXP = "\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"

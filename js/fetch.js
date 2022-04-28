@@ -84,7 +84,6 @@ TuringCpu.prototype.DecAddress = function() {
     decClean['0'] = `${LAMBDA},R,DEC-ADDRESS-CLEAN`
     decClean['1'] = `${LAMBDA},R,DEC-ADDRESS-CLEAN`
     decClean[LAMBDA] = `${LAMBDA},R,${RUN_STATE}`
-    decClean['#'] = `${LAMBDA},N,${RUN_STATE}`
 
     for (let char of TURING_ALPHABET) {
         markStates[char] = 'R'
@@ -217,11 +216,46 @@ TuringCpu.prototype.ConstArgToALU = function() {
     this.turing.AddState('CONST-ARG-TO-ALU-BEGIN', states2)
 }
 
+TuringCpu.prototype.FixBinaryArgs = function() {
+    let states = {}
+    let skip = {}
+    let fix = {}
+
+    states[LAMBDA] = `${LAMBDA},L,FIX-BINARY-ARGS-SKIP`
+
+    for (let char of [...REGISTER_NAMES, '0', '1'])
+        skip[char] = 'L'
+
+    skip[LAMBDA] = `1,L,WRITE-BACK`
+
+    this.turing.AddState('FIX-BINARY-ARGS', states)
+    this.turing.AddState('FIX-BINARY-ARGS-SKIP', skip)
+}
+
+TuringCpu.prototype.FixMovArgs = function() {
+    let states = {}
+    let skip = {}
+    let fix = {}
+
+    states[LAMBDA] = `${LAMBDA},L,FIX-MOV-ARGS-SKIP`
+
+    for (let char of [...REGISTER_NAMES, '0', '1'])
+        skip[char] = 'L'
+
+    skip[LAMBDA] = `0,L,WRITE-BACK`
+
+    this.turing.AddState('FIX-MOV-ARGS', states)
+    this.turing.AddState('FIX-MOV-ARGS-SKIP', skip)
+}
+
 TuringCpu.prototype.WriteBack = function() {
     let states = {}
 
     for (let char of TURING_ALPHABET)
         states[char] = char != '@' ? 'L' : '@,R,WRITE-RESULT'
+
+    for (let command of BINARY_COMMAND_NAMES)
+        states[command] = `${command},L,FIX-BINARY-ARGS`
 
     this.turing.AddState('WRITE-BACK', states)
 }
@@ -247,6 +281,8 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.AppendToALU(false)
     this.WriteBack()
     this.WriteResult()
+    this.FixBinaryArgs()
+    this.FixMovArgs()
 
     this.DecAddress()
     this.Jump()
@@ -256,7 +292,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     fetchStates['0'] = `0,N,CONST-ARG-TO-ALU`
     fetchStates['1'] = `1,N,CONST-ARG-TO-ALU`
 
-    fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,WRITE-BACK`
+    fetchStates[MOV_CMD.name] = `${MOV_CMD.name},L,FIX-MOV-ARGS`
     fetchStates[JMP_CMD.name] = `${JMP_CMD.name},R,${JMP_CMD.name}`
     fetchStates[PROGRAM_END_CHAR] = `${HALT}`
 

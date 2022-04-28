@@ -75,10 +75,10 @@ TuringCpu.prototype.InitTuringProgram = function() {
 
     let labelDepth = 0
 
-    while ((1 << labelDepth) < this.program.length)
+    while ((1 << labelDepth) <= this.program.length)
         labelDepth++
 
-    console.log(labelDepth, this.program.length)
+    labelDepth++
 
     for (let i = 0; i < labelDepth; i++)
             program.push(LAMBDA)
