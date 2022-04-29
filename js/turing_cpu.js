@@ -96,34 +96,69 @@ TuringCpu.prototype.StackInstructionToProgramTape = function(instruction) {
     return program
 }
 
-TuringCpu.prototype.MainInstructionToProgramTape = function(instruction) {
+TuringCpu.prototype.MovInstructionToProgramTape = function(instruction) {
     let program = []
-    let args = instruction.args
+    let arg1 = instruction.args[0]
+    let arg2 = instruction.args[1]
 
-    for (let i = 0; i < args.length; i++) {
-        let arg = args[i]
-
-        if (IsAddress(arg)) {
-            program.push('&')
-            arg = arg.substr(1, arg.length - 2)
-        }
-
-        if (IsConstant(arg))
-            program = program.concat(this.ConstantToBits(arg, this.bitDepth))
-        else
-            program.push(arg)
-
-        if (args.length == 1 || i == 1) {
-            program.push(LAMBDA)
-        }
-        else if (instruction.command == MOV_CMD.name) {
-            program.push('0')
-        }
-        else {
-            program.push('1')
-        }
+    if (IsRegister(arg1)) {
+        program.push(arg1)
+        program.push('0')
+    }
+    else {
+        program.push('&')
+        program = program.concat(this.AddressToBits(arg1))
+        program.push(LAMBDA)
     }
 
+    if (IsRegister(arg2)) {
+        program.push(arg2)
+    }
+    else if (IsConstant(arg2)) {
+        program = program.concat(this.ConstantToBits(arg2, this.bitDepth))
+    }
+    else {
+        program.push('&')
+        program = program.concat(this.AddressToBits(arg2))
+    }
+
+    program.push(LAMBDA)
+    program.push(instruction.command)
+    program.push(LAMBDA)
+    return program
+}
+
+TuringCpu.prototype.UnaryCommandToProgramTape = function(instruction) {
+    let program = []
+
+    program.push(instruction.args[0])
+    program.push(LAMBDA)
+    program.push(instruction.command)
+    program.push(LAMBDA)
+
+    return program
+}
+
+TuringCpu.prototype.BinaryInstructionToProgramTape = function(instruction) {
+    let program = []
+    let arg1 = instruction.args[0]
+    let arg2 = instruction.args[1]
+
+    program.push(arg1)
+    program.push('1')
+
+    if (IsAddress(arg2)) {
+        program.push('&')
+        program = program.concat(this.AddressToBits(arg2))
+    }
+    else if (IsConstant(arg2)) {
+        program = program.concat(this.ConstantToBits(arg2, this.bitDepth))
+    }
+    else {
+        program.push(arg2)
+    }
+
+    program.push(LAMBDA)
     program.push(instruction.command)
     program.push(LAMBDA)
     return program
@@ -132,14 +167,14 @@ TuringCpu.prototype.MainInstructionToProgramTape = function(instruction) {
 TuringCpu.prototype.InitTuringProgram = function() {
     let program = [PROGRAM_CHAR]
 
-    let labelDepth = 0
+    this.labelDepth = 0
 
-    while ((1 << labelDepth) <= this.program.length)
-        labelDepth++
+    while ((1 << this.labelDepth) <= this.program.length)
+        this.labelDepth++
 
-    labelDepth++
+    this.labelDepth++
 
-    for (let i = 0; i < labelDepth; i++)
+    for (let i = 0; i < this.labelDepth; i++)
         program.push(LAMBDA)
 
     for (let instruction of this.program) {
@@ -148,11 +183,17 @@ TuringCpu.prototype.InitTuringProgram = function() {
         if (instruction.type == LABEL_TYPE) {
             program = program.concat(this.LabelInstructionToProgramTape(instruction))
         }
+        else if (instruction.command == MOV_CMD.name) {
+            program = program.concat(this.MovInstructionToProgramTape(instruction))
+        }
         else if (instruction.command == PUSH_CMD.name || instruction.command == POP_CMD.name) {
             program = program.concat(this.StackInstructionToProgramTape(instruction))
         }
+        else if (instruction.args.length == 1) {
+            program = program.concat(this.UnaryCommandToProgramTape(instruction))
+        }
         else {
-            program = program.concat(this.MainInstructionToProgramTape(instruction))
+            program = program.concat(this.BinaryInstructionToProgramTape(instruction))
         }
     }
 
@@ -187,8 +228,14 @@ TuringCpu.prototype.InitTuringRegister = function(name) {
 TuringCpu.prototype.InitTuringMemory = function() {
     let memory = [MEMORY_CHAR]
 
-    memory.push(LAMBDA)
-    for (let i = 0; i < this.bitDepth; i++)
+    this.memoryDepth = 0
+
+    while ((1 << this.memoryDepth) < memoryCount)
+        this.memoryDepth++
+
+    this.memoryDepth = Math.max(this.memoryDepth, this.bitDepth)
+
+    for (let i = 0; i <= this.memoryDepth; i++)
             memory.push(LAMBDA)
 
     for (let i = 0; i < this.memoryCount; i++) {
@@ -250,6 +297,8 @@ TuringCpu.prototype.InitTuringProgramStates = function() {
     }
 
     returnState['~'] = `${LAMBDA},R,${FETCH_STATE}`
+    returnState['O'] = `0,L,${RETURN_RUN_STATE}`
+    returnState['I'] = `1,L,${RETURN_RUN_STATE}`
 
     runState['#'] = `@,R,${FETCH_STATE}`
     runState['@'] = `R`
@@ -383,6 +432,15 @@ TuringCpu.prototype.ConstantToBits = function(value, bitDepth = -1) {
     return bits.reverse()
 }
 
+TuringCpu.prototype.AddressToBits = function(value, bitDepth = -1) {
+    value = value.substr(1, value.length - 2)
+
+    if (IsRegister(value))
+        return [value]
+
+    return this.ConstantToBits(value, bitDepth)
+}
+
 TuringCpu.prototype.GetInfoValues = function() {
     let values = {}
     let chars = this.turing.tape.positive
@@ -397,7 +455,8 @@ TuringCpu.prototype.GetInfoValues = function() {
 
         if (chars[i] in INFO_BLOCKS_COLORS) {
             let len = REGISTER_NAMES.indexOf(chars[i]) > -1 ? this.bitDepth : 1
-            values[chars[i]] = chars.slice(i + 1, i + 1 + len).join('')
+            let value = chars.slice(i + 1, i + 1 + len).join('')
+            values[chars[i]] = value.replace('O', 0).replace('I', 1)
         }
     }
 

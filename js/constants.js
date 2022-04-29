@@ -217,14 +217,6 @@ const TURING_ALPHABET = [
 ]
 
 const TURING_STATES = [
-    {name: "MEMORY-RUN",        transitions: `{"0": "R", "1": "R", "I": "I,L,MEMORY-MOVE"}`},
-    {name: "MEMORY-MOVE",       transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark"}`},
-    {name: "MEMORY-MOVE-mark",  transitions: `{"0": "R", "1": "R", "#": "O,L,MEMORY-MOVE-begin", "I": "R", "O": "R", "${LAMBDA}": "R"}`},
-    {name: "MEMORY-MOVE-begin", transitions: `{"0": "L", "1": "L", "#": "L", "I": "I,L,MEMORY-MOVE", "O": "L", "${LAMBDA}": "L"}`},
-    {name: "MEMORY-MOVE-dec",   transitions: `{"0": "1,L,MEMORY-MOVE-dec", "1": "0,R,MEMORY-MOVE-mark", "${MEMORY_CHAR}": "${MEMORY_CHAR},R,MEMORY-MOVE-shift"}`},
-    {name: "MEMORY-MOVE-shift", transitions: `{"0": ",R,MEMORY-MOVE-shift", "1": ",R,MEMORY-MOVE-shift", "I": ",R,MEMORY-MOVE-find"}`},
-    {name: "MEMORY-MOVE-find",  transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "#": "#,R,${RETURN_RUN_STATE}", "O": "#,R,MEMORY-MOVE-find"}`},
-
     {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
     {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
 
