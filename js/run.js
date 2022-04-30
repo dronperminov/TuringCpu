@@ -28,10 +28,17 @@ TuringCpu.prototype.IsEnd = function() {
     return this.turing.state == HALT
 }
 
+TuringCpu.prototype.IsNextEnd = function() {
+    return this.turing.state == FETCH_STATE && this.turing.tape.GetChar() == PROGRAM_END_CHAR
+}
+
 TuringCpu.prototype.TuringStep = function() {
     let prevState = this.turing.state
     this.turing.Step()
     let currState = this.turing.state
+
+    if (this.IsNextEnd())
+        this.turing.Step()
 
     if (prevState == RUN_STATE && currState == 'FETCH' || currState == HALT) {
         this.HighlightCurrLine()
