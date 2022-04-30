@@ -310,6 +310,7 @@ TuringCpu.prototype.WriteResult = function() {
 }
 
 TuringCpu.prototype.WriteFlag = function() {
+    let write = {}
     let write0 = {}
     let write1 = {}
 
@@ -318,9 +319,13 @@ TuringCpu.prototype.WriteFlag = function() {
         write1[char] = 'L'
     }
 
+    write['0'] = '0,L,WRITE-0-FLAG'
+    write['1'] = '1,L,WRITE-1-FLAG'
+
     write0['~'] = `0,L,${FETCH_STATE}`
     write1['~'] = `1,L,${FETCH_STATE}`
 
+    this.turing.AddState('WRITE-FLAG', write)
     this.turing.AddState('WRITE-0-FLAG', write0)
     this.turing.AddState('WRITE-1-FLAG', write1)
 }
@@ -331,10 +336,9 @@ TuringCpu.prototype.CheckZeroFlag = function() {
     for (let char of TURING_ALPHABET)
         states[char] = 'R'
 
-    states[ZERO_FLAG_CHAR] = `${ZERO_FLAG_CHAR},R,WRITE-ZERO-FLAG`
+    states[ZERO_FLAG_CHAR] = `${ZERO_FLAG_CHAR},R,WRITE-FLAG`
 
     this.turing.AddState('CHECK-ZERO-FLAG', states)
-    this.turing.AddState('WRITE-ZERO-FLAG', {'0': '0,L,WRITE-0-FLAG', '1': '1,L,WRITE-1-FLAG'})
     this.turing.AddState('WRITE-NO-ZERO-FLAG', {'0': '0,L,WRITE-1-FLAG', '1': '1,L,WRITE-0-FLAG'})
 }
 
@@ -344,10 +348,9 @@ TuringCpu.prototype.CheckCarryFlag = function() {
     for (let char of TURING_ALPHABET)
         states[char] = 'R'
 
-    states[CARRY_FLAG_CHAR] = `${CARRY_FLAG_CHAR},R,WRITE-CARRY-FLAG`
+    states[CARRY_FLAG_CHAR] = `${CARRY_FLAG_CHAR},R,WRITE-FLAG`
 
     this.turing.AddState('CHECK-CARRY-FLAG', states)
-    this.turing.AddState('WRITE-CARRY-FLAG', {'0': '0,L,WRITE-0-FLAG', '1': '1,L,WRITE-1-FLAG'})
 }
 
 TuringCpu.prototype.CheckCarryOrZeroFlags = function() {
@@ -360,7 +363,7 @@ TuringCpu.prototype.CheckCarryOrZeroFlags = function() {
     }
 
     carry[CARRY_FLAG_CHAR] = `${CARRY_FLAG_CHAR},R,WRITE-CARRY-OR-ZERO-FLAG`
-    zero[ZERO_FLAG_CHAR] = `${ZERO_FLAG_CHAR},R,WRITE-ZERO-FLAG`
+    zero[ZERO_FLAG_CHAR] = `${ZERO_FLAG_CHAR},R,WRITE-FLAG`
 
     this.turing.AddState('CHECK-CARRY-OR-ZERO-FLAG', carry)
     this.turing.AddState('CHECK-CARRY-OR-ZERO-0', zero)
