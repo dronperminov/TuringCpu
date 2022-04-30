@@ -254,20 +254,20 @@ TuringCpu.prototype.FixBinaryArgs = function() {
     this.turing.AddState('FIX-BINARY-ARGS-SKIP', skip)
 }
 
-TuringCpu.prototype.FixCmpArgs = function() {
+TuringCpu.prototype.SkipWriteBack = function() {
     let states = {}
     let skip = {}
     let fix = {}
 
-    states[LAMBDA] = `${LAMBDA},L,FIX-CMP-ARGS-SKIP`
+    states[LAMBDA] = `${LAMBDA},L,SKIP-WRITE-BACK-SKIP`
 
     for (let char of [...REGISTER_NAMES, '0', '1'])
         skip[char] = 'L'
 
     skip[LAMBDA] = `1,L,CLEAR-ALU`
 
-    this.turing.AddState('FIX-CMP-ARGS', states)
-    this.turing.AddState('FIX-CMP-ARGS-SKIP', skip)
+    this.turing.AddState('SKIP-WRITE-BACK', states)
+    this.turing.AddState('SKIP-WRITE-BACK-SKIP', skip)
 }
 
 TuringCpu.prototype.FixMovArgs = function() {
@@ -295,7 +295,8 @@ TuringCpu.prototype.WriteBack = function() {
     for (let command of BINARY_COMMAND_NAMES)
         states[command] = `${command},L,FIX-BINARY-ARGS`
 
-    states[CMP_CMD.name] = `${CMP_CMD.name},L,FIX-CMP-ARGS`
+    states[CMP_CMD.name] = `${CMP_CMD.name},L,SKIP-WRITE-BACK`
+    states[TEST_CMD.name] = `${TEST_CMD.name},L,SKIP-WRITE-BACK`
 
     this.turing.AddState(WRITE_BACK_STATE, states)
 }
@@ -599,7 +600,14 @@ TuringCpu.prototype.FetchCommands = function(fetchStates) {
         fetchStates[command] = `${command},R,STEP-${command}`
 
         let argStates = {}
-        argStates[LAMBDA] = `~,R,MOVE-ALU-${command == CMP_CMD.name ? SUB_CMD.name : command}`
+
+        if (command == CMP_CMD.name)
+            argStates[LAMBDA] = `~,R,MOVE-ALU-${SUB_CMD.name}`
+        else if (command == TEST_CMD.name)
+            argStates[LAMBDA] = `~,R,MOVE-ALU-${AND_CMD.name}`
+        else
+            argStates[LAMBDA] = `~,R,MOVE-ALU-${command}`
+
         this.turing.AddState(`STEP-${command}`, argStates)
 
         let states = {}
@@ -607,7 +615,7 @@ TuringCpu.prototype.FetchCommands = function(fetchStates) {
         for (let char of TURING_ALPHABET)
             states[char] = char != ALU_CHAR ? 'R' : `${ALU_CHAR},R,${command}`
 
-        if (command != CMP_CMD.name) {
+        if (command != CMP_CMD.name && command != TEST_CMD.name) {
             this.turing.AddState(`MOVE-ALU-${command}`, states)
         }
     }
@@ -990,7 +998,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.WriteResult()
     this.FixBinaryArgs()
     this.FixMovArgs()
-    this.FixCmpArgs()
+    this.SkipWriteBack()
 
     this.WriteFlag()
     this.CheckZeroFlag()

@@ -50,6 +50,7 @@ const SHL_CMD = { name: "SHL", args: 2, argTypes: ARITHMETIC_ARGS }
 const SHR_CMD = { name: "SHR", args: 2, argTypes: ARITHMETIC_ARGS }
 const ROL_CMD = { name: "ROL", args: 1, argTypes: [[REGISTER_TYPE]] }
 const ROR_CMD = { name: "ROR", args: 1, argTypes: [[REGISTER_TYPE]] }
+const TEST_CMD = { name: "TEST", args: 2, argTypes: ARITHMETIC_ARGS }
 
 const JMP_CMD = {name: 'JMP', args: 1, argTypes: [[LABEL_TYPE]] }
 
@@ -78,7 +79,7 @@ const COMMANDS = [
     INC_CMD, DEC_CMD,
     ADD_CMD, SUB_CMD, MUL_CMD, CMP_CMD,
     NOT_CMD, ROL_CMD, ROR_CMD,
-    AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD,
+    AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD, TEST_CMD,
 
     JMP_CMD,
     JZ_CMD, JNZ_CMD,
@@ -95,7 +96,7 @@ const UNARY_COMMAND_NAMES = [
 const BINARY_COMMAND_NAMES = [
     ADD_CMD.name, SUB_CMD.name, MUL_CMD.name, CMP_CMD.name,
     AND_CMD.name, OR_CMD.name, XOR_CMD.name,
-    SHR_CMD.name, SHL_CMD.name
+    SHR_CMD.name, SHL_CMD.name, TEST_CMD.name
 ]
 
 const ALU_COMMAND_NAMES = [
