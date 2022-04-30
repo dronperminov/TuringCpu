@@ -16,12 +16,13 @@ TuringCpu.prototype.InitControls = function() {
     this.resetBtn = document.getElementById('reset-btn')
     this.compileBtn = document.getElementById('compile-btn')
     this.stepByInstructionsBox = document.getElementById('step-by-instructions-box')
-    this.showStatesBox = document.getElementById('show-states-box')
+    this.showStateBox = document.getElementById('show-state-box')
 
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
     this.resetBtn.addEventListener('click', () => this.Reset(false))
     this.compileBtn.addEventListener('click', () => this.Reset(true))
+    this.showStateBox.addEventListener('change', () => this.UpdateView())
 
     window.addEventListener('resize', () => this.Resize())
 }
@@ -494,7 +495,7 @@ TuringCpu.prototype.UpdateView = function() {
             showed.push(name)
     }
 
-    this.turing.ToHTML(showed, this.showStatesBox.checked, values['curr_begin'], values['curr_end'])
+    this.turing.ToHTML(showed, this.showStateBox.checked, values['curr_begin'], values['curr_end'])
 }
 
 TuringCpu.prototype.Resize = function() {

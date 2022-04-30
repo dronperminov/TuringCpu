@@ -66,9 +66,9 @@ TuringMachine.prototype.OptimizeCommand = function(state, char, nextChar, move, 
         return move
 
     if (state == nextState)
-        return `${nextChar},${move}`
+        return `${nextChar}, ${move}`
 
-    return `${nextChar},${move},${nextState}`
+    return `${nextChar}, ${move}, ${nextState}`
 }
 
 TuringMachine.prototype.Step = function() {
@@ -207,111 +207,22 @@ TuringMachine.prototype.MakeTapeHTML = function(showedBlocks, currInstructionBeg
     }
 }
 
-TuringMachine.prototype.MakeNamedRow = function(names, classNames = null) {
-    let row = document.createElement('div')
-    row.className = 'turing-states-row'
-
-    for (let i = 0; i < names.length; i++) {
-        let cell = document.createElement('div')
-        cell.className = 'turing-states-cell'
-
-        if (classNames != null && classNames[i])
-            cell.classList.add(classNames[i])
-
-        cell.innerHTML = names[i]
-        row.appendChild(cell)
-    }
-
-    return row
-}
-
-TuringMachine.prototype.MakeHeaderRow = function(alphabet) {
-    let names = ['Состояние']
-    let classNames = ['']
-    let currChar = this.tape.GetChar()
-
-    for (let char of alphabet) {
-        names.push(char == LAMBDA ? LAMBDA_CELL : char)
-        classNames.push(char == currChar && !this.IsHalt(this.state) ? 'turing-states-active-char' : '')
-    }
-
-    return this.MakeNamedRow(names, classNames)
-}
-
-TuringMachine.prototype.MakeStateRow = function(state, alphabet) {
-    let names = [`q<sub>${state}</sub>`]
-    let classNames = [state == this.state ? 'turing-states-active-state' : '']
-
-    for (let char of alphabet) {
-        if (char in this.states[state]) {
-            let command = this.ParseCommand(state, char)
-
-            let prevChar = char == LAMBDA ? LAMBDA_CELL : char
-            let nextChar = command.nextChar == LAMBDA ? LAMBDA_CELL : command.nextChar
-
-            let prevState = this.IsHalt(state) ? `q<sub>halt</sub>` : `q<sub>${state}</sub>`
-            let nextState = this.IsHalt(command.nextState) ? `q<sub>halt</sub>` : `q<sub>${command.nextState}</sub>`
-
-            names.push(this.OptimizeCommand(prevState, prevChar, nextChar, command.move, nextState))
-        }
-        else {
-            names.push('')
-        }
-
-        if (state == this.state && char == this.tape.GetChar())
-            classNames.push('turing-states-active-cell')
-        else
-            classNames.push('')
-    }
-
-    return this.MakeNamedRow(names, classNames)
-}
-
-TuringMachine.prototype.GetCommandStates = function() {
-    let currStates = new Set()
-    let currAlphabet = new Set()
-
-    for (let queue = [this.state]; queue.length > 0;) {
-        let state = queue.shift()
-
-        if (currStates.has(state) || this.IsHalt(state))
-            continue
-
-        for (let char of Object.keys(this.states[state])) {
-            let nextState = this.ParseCommand(state, char).nextState
-            currAlphabet.add(char)
-            queue.push(nextState)
-        }
-
-        currStates.add(state)
-    }
-
-    let indices = {}
-
-    for (let i = 0; i < TURING_STATES.length; i++)
-        indices[TURING_STATES[i].name] = i
-
-    currStates = Array.from(currStates).sort((a, b) => indices[a] - indices[b])
-
-    return {states: currStates, alphabet: currAlphabet}
-}
-
-TuringMachine.prototype.MakeStates = function(states) {
-    let curr = this.GetCommandStates(this.state)
-    let alphabet = Array.from(curr.alphabet)
-
-    states.appendChild(this.MakeHeaderRow(alphabet))
-
-    for (let state of curr.states)
-        states.appendChild(this.MakeStateRow(state, alphabet))
-}
-
-TuringMachine.prototype.ToHTML = function(showedBlocks, showStates, currInstructionBegin, currInstructionEnd) {
+TuringMachine.prototype.ToHTML = function(showedBlocks, showState, currInstructionBegin, currInstructionEnd) {
     this.MakeTapeHTML(showedBlocks, currInstructionBegin, currInstructionEnd)
 
-    let states = document.getElementById('states-div')
-    states.innerHTML = ''
+    let stateDiv = document.getElementById('state-div')
+    stateDiv.innerHTML = ''
 
-    if (showStates && this.state && !this.IsHalt(this.state))
-        this.MakeStates(states)
+    if (!showState)
+        return
+
+    let char = this.tape.GetChar()
+    stateDiv.innerHTML += `<b>Текущее состояние</b>: ${this.state == HALT ? 'останов' : this.state}<br>`
+    stateDiv.innerHTML += `<b>Текущий символ</b>: ${char.replace(LAMBDA, LAMBDA_CELL)}<br>`
+
+    if (this.state != HALT) {
+        let command = this.ParseCommand(this.state, char)
+        command = this.OptimizeCommand(this.state, char.replace(LAMBDA, LAMBDA_CELL), command.nextChar.replace(LAMBDA, LAMBDA_CELL), command.move, command.nextState)
+        stateDiv.innerHTML += `<b>Переход</b>: ${command}<br>`
+    }
 }
