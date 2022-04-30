@@ -251,41 +251,6 @@ TuringCpu.prototype.InitTuringMemory = function() {
     return memory
 }
 
-TuringCpu.prototype.InitTuringMoves = function() {
-    let moves = [
-        {name: 'MOVE-ALU', char: ALU_CHAR },
-        {name: 'MOVE-MEMORY', char: MEMORY_CHAR },
-        {name: 'MOVE-STACK', char: STACK_CHAR },
-        {name: 'MOVE-ZERO-FLAG', char: ZERO_FLAG_CHAR},
-        {name: 'MOVE-CARRY-FLAG', char: CARRY_FLAG_CHAR}
-    ]
-
-    for (let register of REGISTER_NAMES)
-        moves.push({name: `MOVE-REGISTER-${register}`, char: register})
-
-    for (let move of moves) {
-        let leftStates = {}
-        let rightStates = {}
-        let rightName = `${move.name}-RIGHT`
-        let targetIndex = PARTS_ORDER.indexOf(move.char)
-
-        for (let char of TURING_ALPHABET) {
-            let index = PARTS_ORDER.indexOf(char)
-
-            if (index == -1 || index >= targetIndex)
-                leftStates[char] = char != move.char ? 'L' : `${char},R,${HALT}`
-            else
-                leftStates[char] = `${char},R,${rightName}`
-
-            if (index == -1 || index <= targetIndex)
-                rightStates[char] = char != move.char ? 'R' : `${char},R,${HALT}`
-        }
-
-        this.turing.AddState(move.name, leftStates)
-        this.turing.AddState(`${rightName}`, rightStates)
-    }
-}
-
 TuringCpu.prototype.InitTuringProgramStates = function() {
     let runState = {}
     let returnState = {}
@@ -342,7 +307,6 @@ TuringCpu.prototype.InitTuring = function() {
     this.turing.SetWord(word)
     this.turing.InitTapeHTML()
 
-    this.InitTuringMoves()
     this.InitTuringProgramStates()
     this.InitTuringFetchStates()
 
