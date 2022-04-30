@@ -469,3 +469,8 @@ TuringCpu.prototype.Resize = function() {
     this.turing.InitTapeHTML()
     this.UpdateView()
 }
+
+TuringCpu.prototype.LoadExample = function(code) {
+    this.codeInput.SetText(code)
+    this.Reset(true)
+}
