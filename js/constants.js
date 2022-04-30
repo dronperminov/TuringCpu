@@ -47,6 +47,8 @@ const XOR_CMD = { name: "XOR", args: 2, argTypes: ARITHMETIC_ARGS }
 const NOT_CMD = { name: "NOT", args: 1, argTypes: [[REGISTER_TYPE]] }
 const SHL_CMD = { name: "SHL", args: 2, argTypes: ARITHMETIC_ARGS }
 const SHR_CMD = { name: "SHR", args: 2, argTypes: ARITHMETIC_ARGS }
+const ROL_CMD = { name: "ROL", args: 1, argTypes: [[REGISTER_TYPE]] }
+const ROR_CMD = { name: "ROR", args: 1, argTypes: [[REGISTER_TYPE]] }
 
 const JMP_CMD = {name: 'JMP', args: 1, argTypes: [[LABEL_TYPE]] }
 
@@ -74,7 +76,8 @@ const COMMANDS = [
 
     INC_CMD, DEC_CMD,
     ADD_CMD, SUB_CMD, MUL_CMD, CMP_CMD,
-    AND_CMD, OR_CMD, XOR_CMD, NOT_CMD, SHL_CMD, SHR_CMD,
+    NOT_CMD, ROL_CMD, ROR_CMD,
+    AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD,
 
     JMP_CMD,
     JZ_CMD, JNZ_CMD,
@@ -84,7 +87,8 @@ const COMMANDS = [
 ]
 
 const UNARY_COMMAND_NAMES = [
-    INC_CMD.name, DEC_CMD.name, NOT_CMD.name,
+    INC_CMD.name, DEC_CMD.name,
+    NOT_CMD.name, ROL_CMD.name, ROR_CMD.name
 ]
 
 const BINARY_COMMAND_NAMES = [
@@ -334,4 +338,17 @@ const TURING_STATES = [
     {name: "SHL-make", transitions: `{"0": "0,L,SHL-zero", "1": "0,L,SHL-one"}`},
     {name: "SHL-zero", transitions: `{"0": "L", "1": "0,L,SHL-one", "${ALU_CHAR}": "${ALU_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
     {name: "SHL-one", transitions: `{"0": "1,L,SHL-zero", "1": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
+
+    {name: "ROL", transitions: `{"0": ",R,ROL-end0", "1": ",R,ROL-end1"}`},
+    {name: "ROL-end0", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ROL-0"}`},
+    {name: "ROL-end1", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ROL-1"}`},
+    {name: "ROL-0", transitions: `{"0": "L", "1": "0,L,ROL-1", "${LAMBDA}": "0,N,write-no-carry"}`},
+    {name: "ROL-1", transitions: `{"0": "1,L,ROL-0", "1": "L", "${LAMBDA}": "1,N,write-no-carry"}`},
+
+    {name: "ROR", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ROR-end"}`},
+    {name: "ROR-end0", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ROR-0"}`},
+    {name: "ROR-end1", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ROR-1"}`},
+    {name: "ROR-end", transitions: `{"0": ",L,ROR-end0", "1": ",L,ROR-end1"}`},
+    {name: "ROR-0", transitions: `{"0": "0,R,ROR-0", "1": "0,R,ROR-1", "${LAMBDA}": "0,N,write-no-carry"}`},
+    {name: "ROR-1", transitions: `{"0": "1,R,ROR-0", "1": "1,R,ROR-1", "${LAMBDA}": "1,N,write-no-carry"}`},
 ]
