@@ -16,18 +16,22 @@ TuringCpu.prototype.ClearALU = function() {
     this.turing.AddState('CLEAR-ALU-2', clear)
 }
 
-TuringCpu.prototype.WriteRegisterToALU = function(register, isBinary) {
-    let end = isBinary ? '-#' : ''
-    let moveEnd = {}
-    let moveRegister = {}
+TuringCpu.prototype.GoToRegisterAction = function(name, register, action) {
+    let run = {}
+    let run2 = {}
 
-    for (let char of TURING_ALPHABET) {
-        moveEnd[char] = char != PROGRAM_END_CHAR ? 'R' : `${char},R,WRITE-REGISTER-${register}-TO-ALU${end}-2`
-        moveRegister[char] = char != register ? 'R' : `${char},R,APPEND-TO-ALU${end}`
-    }
+    for (let char of TURING_ALPHABET)
+        run[char] = 'R'
 
-    this.turing.AddState(`WRITE-REGISTER-${register}-TO-ALU${end}`, moveEnd)
-    this.turing.AddState(`WRITE-REGISTER-${register}-TO-ALU${end}-2`, moveRegister)
+    run[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},R,${name}-2`
+
+    for (let char of [...REGISTER_NAMES, '0', '1', LAMBDA])
+        run2[char] = 'R'
+
+    run2[register] = `${register},R,${action}`
+
+    this.turing.AddState(`${name}`, run)
+    this.turing.AddState(`${name}-2`, run2)
 }
 
 TuringCpu.prototype.WriteALUToRegister = function(register) {
@@ -432,22 +436,6 @@ TuringCpu.prototype.JBE = function() {
     this.turing.AddState(`${JBE_CMD.name}`, states)
 }
 
-TuringCpu.prototype.PushRegister = function(register) {
-    let move = {}
-    let push = {}
-
-    for (let char of TURING_ALPHABET) {
-        move[char] = 'R'
-        push[char] = 'R'
-    }
-
-    move[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},R,PUSH-REGISTER-${register}-2`
-    push[register] = `${register},R,PUSH`
-
-    this.turing.AddState(`PUSH-REGISTER-${register}`, move)
-    this.turing.AddState(`PUSH-REGISTER-${register}-2`, push)
-}
-
 TuringCpu.prototype.Push = function() {
     let states = {}
     states['0'] = 'O,R,PUSH-0'
@@ -481,7 +469,7 @@ TuringCpu.prototype.Push = function() {
 
     for (let register of REGISTER_NAMES) {
         states[register] = `${register},R,PUSH-REGISTER-${register}`
-        this.PushRegister(register)
+        this.GoToRegisterAction(`PUSH-REGISTER-${register}`, register, 'PUSH')
     }
 
     this.turing.AddState('PUSH', states)
@@ -750,22 +738,8 @@ TuringCpu.prototype.MemoryToALU = function() {
         let step = {}
         step[LAMBDA] = `~,R,MEMORY-ADDRESS-${register}-TO-ALU`
 
-        let run = {}
-        let run2 = {}
-
-        for (let char of TURING_ALPHABET)
-            run[char] = 'R'
-
-        run[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},R,MEMORY-ADDRESS-${register}-TO-ALU-2`
-        
-        run2[register] = `${register},R,REGISTER-ADDRESS-TO-MEMORY-ALU`
-        run2['0'] = 'R'
-        run2['1'] = 'R'
-        run2[LAMBDA] = 'R'
-
         this.turing.AddState(`MEMORY-ADDRESS-${register}-TO-ALU-STEP`, step)
-        this.turing.AddState(`MEMORY-ADDRESS-${register}-TO-ALU`, run)
-        this.turing.AddState(`MEMORY-ADDRESS-${register}-TO-ALU-2`, run2)
+        this.GoToRegisterAction(`MEMORY-ADDRESS-${register}-TO-ALU`, register, 'REGISTER-ADDRESS-TO-MEMORY-ALU')
     }
 
     let move = {}
@@ -848,22 +822,6 @@ TuringCpu.prototype.CheckMemoryOp = function() {
     this.turing.AddState('CHECK-MEMORY-OP', states)
 }
 
-TuringCpu.prototype.RegisterToMemory = function(register) {
-    let states = {}
-    let mov = {}
-
-    for (let char of TURING_ALPHABET) {
-        states[char] = 'R'
-        mov[char] = 'R'
-    }
-
-    states[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},R,MOV-${register}-TO-MEMORY-MOVE`
-    mov[register] = `${register},R,MOV-VALUE-TO-MEMORY`
-
-    this.turing.AddState(`MOV-${register}-TO-MEMORY`, states)
-    this.turing.AddState(`MOV-${register}-TO-MEMORY-MOVE`, mov)
-}
-
 TuringCpu.prototype.MemoryClearMark = function() {
     let states = {}
     let run = {}
@@ -899,7 +857,7 @@ TuringCpu.prototype.MovValueToMemory = function() {
 
     for (let register of REGISTER_NAMES) {
         states[register] = `${register},R,MOV-${register}-TO-MEMORY`
-        this.RegisterToMemory(register)
+        this.GoToRegisterAction(`MOV-${register}-TO-MEMORY`, register, 'MOV-VALUE-TO-MEMORY')
     }
 
     for (let char of TURING_ALPHABET) {
@@ -957,20 +915,8 @@ TuringCpu.prototype.MovToMemory = function() {
         let step = {}
         step[LAMBDA] = `~,R,MOV-ADDRESS-${register}-TO-MEMORY`
 
-        let run = {}
-        let run2 = {}
-
-        for (let char of TURING_ALPHABET) {
-            run[char] = 'R'
-            run2[char] = 'R'
-        }
-
-        run[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},R,MOV-ADDRESS-${register}-TO-MEMORY-2`
-        run2[register] = `${register},R,MOV-REGISTER-ADDRESS-TO-MEMORY`
-
         this.turing.AddState(`MOV-ADDRESS-${register}-TO-MEMORY-STEP`, step)
-        this.turing.AddState(`MOV-ADDRESS-${register}-TO-MEMORY`, run)
-        this.turing.AddState(`MOV-ADDRESS-${register}-TO-MEMORY-2`, run2)
+        this.GoToRegisterAction(`MOV-ADDRESS-${register}-TO-MEMORY`, register, 'MOV-REGISTER-ADDRESS-TO-MEMORY')
     }
 
     for (let digit of ['0', '1']) {
@@ -1051,8 +997,8 @@ TuringCpu.prototype.MovToMemory = function() {
 
 TuringCpu.prototype.InitTuringFetchStates = function() {
     for (let register of REGISTER_NAMES) {
-        this.WriteRegisterToALU(register, false)
-        this.WriteRegisterToALU(register, true)
+        this.GoToRegisterAction(`WRITE-REGISTER-${register}-TO-ALU`, register, `APPEND-TO-ALU`)
+        this.GoToRegisterAction(`WRITE-REGISTER-${register}-TO-ALU-#`, register, `APPEND-TO-ALU-#`)
         this.WriteALUToRegister(register)
     }
 
