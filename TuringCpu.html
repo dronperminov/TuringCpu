@@ -27,6 +27,35 @@
 ; https://github.com/dronperminov/TuringCpu
 ; Пример вычисления числа Фибоначчи по номеру в регистре A
 
+MOV E, 3
+MOV [E], 5
+MOV [5], E
+MOV [0], 7
+MOV B, [5]
+MOV C, [E]
+MOV D, [0]
+MOV A, E
+ADD E, [5]
+ADD F, [C]
+INC B
+XOR D, E
+XOR E, D
+XOR D, E
+PUSH 1
+PUSH 2
+PUSH A
+PUSH B
+PUSH C
+PUSH D
+PUSH E
+SUB F, A
+POP A
+POP B
+POP C
+POP D
+POP E
+POP F
+
 JMP start
 
 .loop:
@@ -41,6 +70,7 @@ JMP start
 start:
     MOV A, 11  ; номер числа Фибоначчи
     MOV C, 0x1
+    XOR B, B
     CMP A, 12
     CMP A, 11
     CMP A, 10
@@ -53,7 +83,7 @@ end:
         </div>
         <div class="footer">
             <label><input type="checkbox" id="step-by-instructions-box" checked>Шагать по инструкциям</label>
-            <label><input type="checkbox" id="show-states-box">Показывать состояния</label>
+            <label><input type="checkbox" id="show-state-box" checked>Показывать состояние</label>
         </div>
 
         <div class="right-header"></div>
@@ -61,7 +91,7 @@ end:
             <div class="values" id="values-box"></div>
             <div class="machine" id="machine-box">
                 <div class="turing-tape" id="tape-div"></div>
-                <div class="turing-states" id="states-div"></div>
+                <div class="turing-state" id="state-div"></div>
             </div>
         </div>
     </div>
@@ -79,6 +109,7 @@ end:
         let bitDepth = 8
         let memoryCount = 15
         let cpu = new TuringCpu(bitDepth, memoryCount)
+        console.log(Object.keys(cpu.turing.states).length)
     </script>
 </body>
 </html>
