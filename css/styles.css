@@ -19,7 +19,7 @@ body, head {
     grid-template-rows: 50px auto 30px;
 
     grid-template-areas:
-    "left-header right-header"
+    "left-header view"
     "code view"
     "footer footer";
 }
@@ -44,10 +44,6 @@ body, head {
 
 .footer-cell a {
     color: #2196f3;
-}
-
-.right-header {
-    grid-area: right-header;
 }
 
 .view {
