@@ -190,6 +190,9 @@ TuringCpu.prototype.InitTuringProgram = function() {
         else if (instruction.command == PUSH_CMD.name || instruction.command == POP_CMD.name) {
             program = program.concat(this.StackInstructionToProgramTape(instruction))
         }
+        else if (instruction.command == HALT_CMD.name) {
+            program.push(HALT_CMD.name)
+        }
         else if (instruction.args.length == 1) {
             program = program.concat(this.UnaryCommandToProgramTape(instruction))
         }

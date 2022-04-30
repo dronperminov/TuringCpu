@@ -1021,6 +1021,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     fetchStates['&'] = `&,L,CHECK-MEMORY-OP`
     fetchStates['0'] = `0,N,CONST-ARG-TO-ALU`
     fetchStates['1'] = `1,N,CONST-ARG-TO-ALU`
+    fetchStates[HALT_CMD.name] = `${HALT}`
     fetchStates[PROGRAM_END_CHAR] = `${HALT}`
 
     this.FetchJumps(fetchStates)

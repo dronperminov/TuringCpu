@@ -66,6 +66,13 @@ TuringCpu.prototype.ParseLabeledLine = function(line, lineId) {
         this.ParseLine(this.ClearLine(parts[1]), lineId)
 }
 
+TuringCpu.prototype.GetCommandType = function(command) {
+    if (command.args == 0 || command.argTypes[0] != LABEL_TYPE)
+        return OTHER_COMMAND
+
+    return LABEL_COMMAND
+}
+
 TuringCpu.prototype.ParseLine = function(line, lineId) {
     if (line == "")
         return
@@ -88,9 +95,10 @@ TuringCpu.prototype.ParseLine = function(line, lineId) {
     if (command.args != args.length)
         this.CompileError(lineId, `Неверное число аргументов команды ${command.name}: ожидалось ${command.args}, а получено ${args.length}`)
 
-    this.ValidateArgs(command, args, lineId)
+    if (command.args > 0)
+        this.ValidateArgs(command, args, lineId)
 
-    this.program.push({ command: cmd, args: args, lineId: lineId, type: command.argTypes[0] == LABEL_TYPE ? LABEL_COMMAND : OTHER_COMMAND })
+    this.program.push({ command: cmd, args: args, lineId: lineId, type: this.GetCommandType(command) })
 }
 
 TuringCpu.prototype.ValidateLabels = function() {

@@ -29,6 +29,7 @@ const MOV_ARGS = [
 ]
 
 const MOV_CMD = { name: "MOV", args: 2, argTypes: MOV_ARGS }
+const HALT_CMD = { name: "HLT", args: 0 }
 
 const PUSH_CMD = { name: "PUSH", args: 1, argTypes: [[REGISTER_TYPE], [CONSTANT_TYPE], [ADDRESS_TYPE]] }
 const POP_CMD = { name: "POP", args: 1, argTypes: [[REGISTER_TYPE]] }
@@ -71,7 +72,7 @@ const JNB_CMD = {name: 'JNB', args: 1, argTypes: [[LABEL_TYPE]] }
 const JNBE_CMD = {name: 'JNBE', args: 1, argTypes: [[LABEL_TYPE]] }
 
 const COMMANDS = [
-    MOV_CMD,
+    MOV_CMD, HALT_CMD,
     PUSH_CMD, POP_CMD,
 
     INC_CMD, DEC_CMD,
@@ -177,7 +178,7 @@ const LEFT_CELL = '‹'
 const RIGHT_CELL = '›'
 
 const PROGRAM_CHAR = 'PRG'
-const PROGRAM_END_CHAR = 'HLT'
+const PROGRAM_END_CHAR = 'END'
 const ALU_CHAR = 'ALU'
 const ALU_CARRY_CHAR = '$'
 const ZERO_FLAG_CHAR = 'ZF'
