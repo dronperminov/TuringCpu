@@ -136,7 +136,7 @@ TuringMachine.prototype.MakeTapeCell = function(cell, char, index, begin, end, s
     else if (char == LAMBDA) {
         cell.classList.add('turing-tape-lambda-cell')
     }
-    else if ([ALU_CHAR, MEMORY_CHAR, STACK_CHAR].indexOf(char) > -1) {
+    else if ([ALU_CHAR, MEMORY_CHAR, STACK_CHAR, PROGRAM_CHAR, PROGRAM_END_CHAR].indexOf(char) > -1) {
         cell.classList.add('turing-tape-system-cell')
     }
     else if (REGISTER_NAMES.indexOf(char) > -1 && skipProg) {
@@ -225,4 +225,46 @@ TuringMachine.prototype.ToHTML = function(showedBlocks, showState, currInstructi
         command = this.OptimizeCommand(this.state, char.replace(LAMBDA, LAMBDA_CELL), command.nextChar.replace(LAMBDA, LAMBDA_CELL), command.move, command.nextState)
         stateDiv.innerHTML += `<b>Переход</b>: ${command}<br>`
     }
+}
+
+TuringMachine.prototype.DFS = function(state, visited) {
+    visited[state] = true
+
+    for (let char of Object.keys(this.states[state])) {
+        let cmd = this.ParseCommand(state, char)
+        if (visited[cmd.nextState] || cmd.nextState == HALT)
+            continue
+
+        this.DFS(cmd.nextState, visited)
+    }
+}
+
+TuringMachine.prototype.ShowAllStates = function() {
+    let all = []
+    for (let state of Object.keys(this.states)) {
+        let val = []
+
+        for (let char of this.alphabet)
+            val.push(char in this.states[state] ? this.states[state][char] : 'N')
+
+        all.push(val.join('='))
+    }
+
+    for (let i = 0; i < all.length; i++) {
+        let index = all.indexOf(all[i], i + 1)
+
+        if (index > -1)
+            console.log(Object.keys(this.states)[i], Object.keys(this.states)[index])
+    }
+
+    let visited = {}
+
+    for (let state of Object.keys(this.states))
+        visited[state] = false
+
+    this.DFS(RUN_STATE, visited)
+
+    for (let state of Object.keys(this.states))
+        if (!visited[state])
+            console.log(state)
 }
