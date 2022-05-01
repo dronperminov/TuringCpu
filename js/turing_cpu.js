@@ -445,9 +445,8 @@ TuringCpu.prototype.GetInfoValues = function() {
 }
 
 TuringCpu.prototype.ConvertToSigned = function(value) {
-    value = value.substr(1)
-    let decimal = Number.parseInt(value, 2)
-    let bitDepth = value.length
+    let decimal = Number.parseInt(value.substr(1), 2)
+    let bitDepth = value.length - 1
 
     if (value.startsWith('1'))
         decimal = -((1 << bitDepth) - decimal)
