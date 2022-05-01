@@ -386,6 +386,8 @@ TuringCpu.prototype.ConstantToBits = function(value, bitDepth = -1) {
     let bits = []
 
     if (bitDepth > -1) {
+        value = this.ConvertToUnsigned(value, bitDepth)
+
         for (; bits.length != bitDepth; value >>= 1)
             bits.push((value & 1) + '')
     }
@@ -442,17 +444,36 @@ TuringCpu.prototype.GetInfoValues = function() {
     return values
 }
 
+TuringCpu.prototype.ConvertToSigned = function(value) {
+    value = value.substr(1)
+    let decimal = Number.parseInt(value, 2)
+    let bitDepth = value.length
+
+    if (value.startsWith('1'))
+        decimal = -((1 << bitDepth) - decimal)
+
+    return decimal
+}
+
+TuringCpu.prototype.ConvertToUnsigned = function(value, bitDepth) {
+    if (value >= 0)
+        return value
+
+    return (1 << bitDepth) + value - 1
+}
+
 TuringCpu.prototype.UpdateView = function() {
     let showed = []
     let values = this.GetInfoValues()
 
     for (let name of Object.keys(INFO_BLOCKS_COLORS)) {
         let value = values[name]
-        let decimal = Number.parseInt(value, 2)
         let id = `show-register-${name}-box`
 
         if (REGISTER_NAMES.indexOf(name) > -1) {
-            this.infoBlocks[name].valueBox.innerHTML = `${value}<sub>2</sub><br>${decimal}<sub>10</sub>`
+            let decimal = Number.parseInt(value, 2)
+            let decimalSigned = this.ConvertToSigned(value)
+            this.infoBlocks[name].valueBox.innerHTML = `bits: ${value}<br>unsigned: ${decimal}<br>signed: ${decimalSigned}`
         }
         else {
             this.infoBlocks[name].valueBox.innerHTML = `${value}<br>${value == "1" ? "TRUE" : "FALSE"}`

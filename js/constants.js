@@ -113,7 +113,7 @@ const LABEL_COMMAND_NAMES = [
     JNA_CMD.name, JNAE_CMD.name, JNB_CMD.name, JNBE_CMD.name
 ]
 
-const CONSTANT_REGEXP = "\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"
+const CONSTANT_REGEXP = "-?\\d+d?\\b|\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"
 const LABEL_REGEXP = "[.a-zA-Z]\\w*"
 
 const HIGHTLIGHT_RULES = [
@@ -148,7 +148,8 @@ function IsAddress(arg) {
         return false
 
     arg = arg.substr(1, arg.length - 2)
-    return IsRegister(arg) || IsConstant(arg)
+
+    return IsRegister(arg) || IsConstant(arg) && !arg.startsWith('-')
 }
 
 function IsLabel(arg) {
