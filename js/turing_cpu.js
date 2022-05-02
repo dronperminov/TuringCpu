@@ -90,6 +90,10 @@ TuringCpu.prototype.StackInstructionToProgramTape = function(instruction) {
     if (IsConstant(arg)) {
         program = program.concat(this.ConstantToBits(arg, this.bitDepth))
     }
+    else if (IsAddress(arg)) {
+        program.push('&')
+        program = program.concat(this.AddressToBits(arg))
+    }
     else {
         program.push(arg)
     }

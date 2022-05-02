@@ -473,11 +473,24 @@ TuringCpu.prototype.JumpOnFlag = function(flagChar, flag, flagNot, name) {
     this.turing.AddState(`${flagNot}`, statesNot)
 }
 
+TuringCpu.prototype.PushMemory = function() {
+    let move = {}
+    move['0'] = 'R'
+    move['1'] = 'R'
+    move[LAMBDA] = 'R'
+    move['@'] = '#,R'
+    move['#'] = '#,R,PUSH'
+
+    this.MemoryInitCell('PUSH-MEMORY', 'PUSH-MEMORY-VALUE', LAMBDA)
+    this.turing.AddState('PUSH-MEMORY-VALUE', move)
+}
+
 TuringCpu.prototype.Push = function() {
     let states = {}
     states['0'] = 'O,R,PUSH-0'
     states['1'] = 'I,R,PUSH-1'
     states[LAMBDA] = `${LAMBDA},R,PUSH-#`
+    states['&'] = `&,R,PUSH-MEMORY`
 
     let begin = {}
 
@@ -705,7 +718,87 @@ TuringCpu.prototype.FetchCommands = function(fetchStates) {
     fetchStates[POP_CMD.name] = `${POP_CMD.name},R,POP`
 }
 
-TuringCpu.prototype.MemoryInitCell = function(name, end) {
+TuringCpu.prototype.RegisterAddressInitCell = function(name) {
+    let states = {}
+    states['0'] = `O,R,${name}-REGISTER-ADDRESS-0`
+    states['1'] = `I,R,${name}-REGISTER-ADDRESS-1`
+    states[LAMBDA] = `${LAMBDA},R,${name}-MOVE`
+
+    let back = {}
+
+    for (let char of TURING_ALPHABET)
+        back[char] = 'L'
+
+    back['O'] = `0,R,${name}-REGISTER-ADDRESS`
+    back['I'] = `1,R,${name}-REGISTER-ADDRESS`
+
+    for (let digit of ['0', '1']) {
+        let address = {}
+        let writeAddress = {}
+
+        for (let char of TURING_ALPHABET)
+            address[char] = 'R'
+
+        address[MEMORY_CHAR] = `${MEMORY_CHAR},R,${name}-REGISTER-ADDRESS-${digit}-WRITE`
+
+        writeAddress['0'] = 'R'
+        writeAddress['1'] = 'R'
+        writeAddress[LAMBDA] = `${digit},L,${name}-REGISTER-ADDRESS-BACK`
+
+        this.turing.AddState(`${name}-REGISTER-ADDRESS-${digit}`, address)
+        this.turing.AddState(`${name}-REGISTER-ADDRESS-${digit}-WRITE`, writeAddress)
+    }
+
+    this.turing.AddState(`${name}-REGISTER-ADDRESS`, states)
+    this.turing.AddState(`${name}-REGISTER-ADDRESS-BACK`, back)
+}
+
+TuringCpu.prototype.MemoryInitCell = function(name, end, lastChar = '~') {
+    let init = {}
+
+    init['&'] = 'R'
+    init['0'] = `O,R,${name}-ADDRESS-0`
+    init['1'] = `I,R,${name}-ADDRESS-1`
+    init[LAMBDA] = `${lastChar},R,${name}-MOVE`
+
+    for (let register of REGISTER_NAMES) {
+        init[register] = `${register},R,${name}-ADDRESS-${register}-STEP`
+
+        let step = {}
+        step[LAMBDA] = `${lastChar},R,${name}-ADDRESS-${register}`
+
+        this.turing.AddState(`${name}-ADDRESS-${register}-STEP`, step)
+        this.GoToRegisterAction(`${name}-ADDRESS-${register}`, register, `${name}-REGISTER-ADDRESS`)
+    }
+
+    this.RegisterAddressInitCell(name)
+
+    for (let digit of ['0', '1']) {
+        let address = {}
+        let write = {}
+
+        for (let char of TURING_ALPHABET) {
+            address[char] = 'R'
+        }
+
+        address[MEMORY_CHAR] = `${MEMORY_CHAR},R,${name}-ADDRESS-${digit}-WRITE`
+
+        write['0'] = 'R'
+        write['1'] = 'R'
+        write[LAMBDA] = `${digit},L,${name}-ADDRESS-BACK`
+
+        this.turing.AddState(`${name}-ADDRESS-${digit}`, address)
+        this.turing.AddState(`${name}-ADDRESS-${digit}-WRITE`, write)
+    }
+
+    let back = {}
+
+    for (let char of TURING_ALPHABET)
+        back[char] = 'L'
+
+    back['O'] = `0,R,${name}`
+    back['I'] = `1,R,${name}`
+
     let move = {}
     for (let char of TURING_ALPHABET)
         move[char] = 'R'
@@ -740,123 +833,31 @@ TuringCpu.prototype.MemoryInitCell = function(name, end) {
     markBack[LAMBDA] = 'L'
     markBack[MEMORY_CHAR] = `${MEMORY_CHAR},R,${name}-DEC`
 
+    this.turing.AddState(name, init)
     this.turing.AddState(`${name}-MOVE`, move)
     this.turing.AddState(`${name}-DEC`, dec)
     this.turing.AddState(`${name}-DEC-2`, dec2)
     this.turing.AddState(`${name}-MARK`, mark)
     this.turing.AddState(`${name}-MARK-BACK`, markBack)
     this.turing.AddState(`${name}-CLEAR`, clear)
-}
-
-TuringCpu.prototype.RegisterAddressToMemoryALU = function(register) {
-    let states = {}
-    states['0'] = 'O,R,REGISTER-ADDRESS-0-TO-MEMORY-ALU'
-    states['1'] = 'I,R,REGISTER-ADDRESS-1-TO-MEMORY-ALU'
-    states[LAMBDA] = `${LAMBDA},R,MEMORY-TO-ALU-MOVE`
-
-    let back = {}
-
-    for (let char of TURING_ALPHABET)
-        back[char] = 'L'
-
-    back['O'] = '0,R,REGISTER-ADDRESS-TO-MEMORY-ALU'
-    back['I'] = '1,R,REGISTER-ADDRESS-TO-MEMORY-ALU'
-
-    for (let digit of ['0', '1']) {
-        let address = {}
-        let writeAddress = {}
-
-        for (let char of TURING_ALPHABET)
-            address[char] = 'R'
-
-        address[MEMORY_CHAR] = `${MEMORY_CHAR},R,REGISTER-ADDRESS-${digit}-TO-ALU-WRITE`
-
-        writeAddress['0'] = 'R'
-        writeAddress['1'] = 'R'
-        writeAddress[LAMBDA] = `${digit},L,REGISTER-ADDRESS-TO-ALU-BACK`
-
-        this.turing.AddState(`REGISTER-ADDRESS-${digit}-TO-MEMORY-ALU`, address)
-        this.turing.AddState(`REGISTER-ADDRESS-${digit}-TO-ALU-WRITE`, writeAddress)
-    }
-
-    this.turing.AddState(`REGISTER-ADDRESS-TO-MEMORY-ALU`, states)
-    this.turing.AddState(`REGISTER-ADDRESS-TO-ALU-BACK`, back)
-}
-
-TuringCpu.prototype.RegisterAddressToMemoryMov = function() {
-    let states = {}
-    states['0'] = 'O,R,MOV-REGISTER-ADDRESS-0-TO-MEMORY'
-    states['1'] = 'I,R,MOV-REGISTER-ADDRESS-1-TO-MEMORY'
-    states[LAMBDA] = `${LAMBDA},R,MOV-TO-MEMORY-MOVE`
-
-    let back = {}
-
-    for (let char of TURING_ALPHABET)
-        back[char] = 'L'
-
-    back['O'] = '0,R,MOV-REGISTER-ADDRESS-TO-MEMORY'
-    back['I'] = '1,R,MOV-REGISTER-ADDRESS-TO-MEMORY'
-
-    for (let digit of ['0', '1']) {
-        let address = {}
-        let writeAddress = {}
-
-        for (let char of TURING_ALPHABET)
-            address[char] = 'R'
-
-        address[MEMORY_CHAR] = `${MEMORY_CHAR},R,MOV-REGISTER-ADDRESS-${digit}-TO-MEMORY-WRITE`
-
-        writeAddress['0'] = 'R'
-        writeAddress['1'] = 'R'
-        writeAddress[LAMBDA] = `${digit},L,MOV-REGISTER-ADDRESS-TO-MEMORY-BACK`
-
-        this.turing.AddState(`MOV-REGISTER-ADDRESS-${digit}-TO-MEMORY`, address)
-        this.turing.AddState(`MOV-REGISTER-ADDRESS-${digit}-TO-MEMORY-WRITE`, writeAddress)
-    }
-
-    this.turing.AddState(`MOV-REGISTER-ADDRESS-TO-MEMORY`, states)
-    this.turing.AddState(`MOV-REGISTER-ADDRESS-TO-MEMORY-BACK`, back)
+    this.turing.AddState(`${name}-ADDRESS-BACK`, back)
 }
 
 TuringCpu.prototype.MemoryToALU = function() {
-    let init = {}
-
-    init['&'] = 'R'
-    init['0'] = 'O,R,MEMORY-ADDRESS-0-TO-ALU'
-    init['1'] = 'I,R,MEMORY-ADDRESS-1-TO-ALU'
-    init[LAMBDA] = `~,R,MEMORY-TO-ALU-MOVE`
-
-    let backAddress = {}
     let backValue = {}
 
-    for (let char of TURING_ALPHABET) {
-        backAddress[char] = 'L'
+    for (let char of TURING_ALPHABET)
         backValue[char] = 'R'
-    }
-
-    backAddress['O'] = '0,R,MEMORY-TO-ALU'
-    backAddress['I'] = '1,R,MEMORY-TO-ALU'
 
     backValue['O'] = 'O,R,MEMORY-TO-ALU-COPY-RUN'
     backValue['I'] = 'I,R,MEMORY-TO-ALU-COPY-RUN'
 
     for (let digit of ['0', '1']) {
-        let address = {}
-        let writeAddress = {}
-
         let value = {}
         let writeValue = {}
 
-        for (let char of TURING_ALPHABET) {
-            address[char] = 'R'
+        for (let char of TURING_ALPHABET)
             value[char] = 'L'
-        }
-
-        address[MEMORY_CHAR] = `${MEMORY_CHAR},R,MEMORY-ADDRESS-${digit}-TO-ALU-WRITE`
-
-        writeAddress['0'] = 'R'
-        writeAddress['1'] = 'R'
-        writeAddress[LAMBDA] = `${digit},L,MEMORY-ADDRESS-TO-ALU-DIGIT-BACK`
 
         value[ALU_CHAR] = `${ALU_CHAR},R,MEMORY-${digit}-TO-ALU-WRITE`
 
@@ -865,25 +866,11 @@ TuringCpu.prototype.MemoryToALU = function() {
         writeValue['#'] = 'R'
         writeValue[LAMBDA] = `${digit},R,MEMORY-TO-ALU-DIGIT-BACK`
 
-        this.turing.AddState(`MEMORY-ADDRESS-${digit}-TO-ALU`, address)
-        this.turing.AddState(`MEMORY-ADDRESS-${digit}-TO-ALU-WRITE`, writeAddress)
-
         this.turing.AddState(`MEMORY-${digit}-TO-ALU`, value)
         this.turing.AddState(`MEMORY-${digit}-TO-ALU-WRITE`, writeValue)
     }
 
-    this.turing.AddState(`MEMORY-ADDRESS-TO-ALU-DIGIT-BACK`, backAddress)
     this.turing.AddState(`MEMORY-TO-ALU-DIGIT-BACK`, backValue)
-
-    for (let register of REGISTER_NAMES) {
-        init[register] = `${register},R,MEMORY-ADDRESS-${register}-TO-ALU-STEP`
-
-        let step = {}
-        step[LAMBDA] = `~,R,MEMORY-ADDRESS-${register}-TO-ALU`
-
-        this.turing.AddState(`MEMORY-ADDRESS-${register}-TO-ALU-STEP`, step)
-        this.GoToRegisterAction(`MEMORY-ADDRESS-${register}-TO-ALU`, register, 'REGISTER-ADDRESS-TO-MEMORY-ALU')
-    }
 
     let copy = {}
     copy['0'] = 'R'
@@ -908,7 +895,6 @@ TuringCpu.prototype.MemoryToALU = function() {
     back['@'] = `#,L,MEMORY-TO-ALU-BACK`
     back[MEMORY_CHAR] = `${MEMORY_CHAR},L,${RETURN_RUN_STATE}`
 
-    this.turing.AddState('MEMORY-TO-ALU', init)
     this.MemoryInitCell('MEMORY-TO-ALU', 'MEMORY-TO-ALU-COPY')
     this.turing.AddState('MEMORY-TO-ALU-COPY', copy)
     this.turing.AddState('MEMORY-TO-ALU-COPY-RUN', copyRun)
@@ -1007,50 +993,6 @@ TuringCpu.prototype.MovValueToMemory = function() {
 }
 
 TuringCpu.prototype.MovToMemory = function() {
-    let states = {}
-    states['&'] = 'R'
-    states['0'] = 'O,R,MOV-ADDRESS-0-TO-MEMORY'
-    states['1'] = 'I,R,MOV-ADDRESS-1-TO-MEMORY'
-    states[LAMBDA] = `~,R,MOV-TO-MEMORY-MOVE`
-
-    for (let register of REGISTER_NAMES) {
-        states[register] = `${register},R,MOV-ADDRESS-${register}-TO-MEMORY-STEP`
-
-        let step = {}
-        step[LAMBDA] = `~,R,MOV-ADDRESS-${register}-TO-MEMORY`
-
-        this.turing.AddState(`MOV-ADDRESS-${register}-TO-MEMORY-STEP`, step)
-        this.GoToRegisterAction(`MOV-ADDRESS-${register}-TO-MEMORY`, register, 'MOV-REGISTER-ADDRESS-TO-MEMORY')
-    }
-
-    let back = {}
-
-    for (let char of TURING_ALPHABET)
-        back[char] = 'L'
-
-    back['O'] = '0,R,MOV-TO-MEMORY'
-    back['I'] = '1,R,MOV-TO-MEMORY'
-
-    for (let digit of ['0', '1']) {
-        let address = {}
-        let write = {}
-
-        for (let char of TURING_ALPHABET) {
-            address[char] = 'R'
-        }
-
-        address[MEMORY_CHAR] = `${MEMORY_CHAR},R,MOV-ADDRESS-${digit}-TO-MEMORY-WRITE`
-
-        write['0'] = 'R'
-        write['1'] = 'R'
-        write[LAMBDA] = `${digit},L,MOV-ADDRESS-TO-MEMORY-BACK`
-
-        this.turing.AddState(`MOV-ADDRESS-${digit}-TO-MEMORY`, address)
-        this.turing.AddState(`MOV-ADDRESS-${digit}-TO-MEMORY-WRITE`, write)
-    }
-
-    this.turing.AddState(`MOV-ADDRESS-TO-MEMORY-BACK`, back)
-
     let copy = {}
 
     for (let char of TURING_ALPHABET)
@@ -1058,7 +1000,6 @@ TuringCpu.prototype.MovToMemory = function() {
 
     copy['~'] = `${LAMBDA},R,MOV-VALUE-TO-MEMORY`
 
-    this.turing.AddState('MOV-TO-MEMORY', states)
     this.MemoryInitCell('MOV-TO-MEMORY', 'MOV-TO-MEMORY-COPY')
     this.turing.AddState('MOV-TO-MEMORY-COPY', copy)
 }
@@ -1081,13 +1022,12 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.SkipWriteBack()
 
     this.Push()
+    this.PushMemory()
     this.Pop()
 
     this.DecAddress()
 
     this.CheckMemoryOp()
-    this.RegisterAddressToMemoryALU()
-    this.RegisterAddressToMemoryMov()
     this.MovValueToMemory()
     this.MemoryClearMark()
     this.MemoryToALU()
