@@ -44,6 +44,7 @@ const POP_CMD = { name: "POP", args: 1, argTypes: [[REGISTER_TYPE]] }
 
 const INC_CMD = { name: "INC", args: 1, argTypes: [[REGISTER_TYPE]] }
 const DEC_CMD = { name: "DEC", args: 1, argTypes: [[REGISTER_TYPE]] }
+const NEG_CMD = { name: "NEG", args: 1, argTypes: [[REGISTER_TYPE]] }
 
 const ADD_CMD = { name: "ADD", args: 2, argTypes: ARITHMETIC_ARGS }
 const SUB_CMD = { name: "SUB", args: 2, argTypes: ARITHMETIC_ARGS }
@@ -85,7 +86,7 @@ const COMMANDS = [
     MOV_CMD, HALT_CMD,
     PUSH_CMD, POP_CMD,
 
-    INC_CMD, DEC_CMD,
+    INC_CMD, DEC_CMD, NEG_CMD,
     ADD_CMD, SUB_CMD, MUL_CMD, DIV_CMD, CMP_CMD,
     NOT_CMD, ROL_CMD, ROR_CMD,
     AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD, TEST_CMD,
@@ -98,7 +99,7 @@ const COMMANDS = [
 ]
 
 const UNARY_COMMAND_NAMES = [
-    INC_CMD.name, DEC_CMD.name,
+    INC_CMD.name, DEC_CMD.name, NEG_CMD.name,
     NOT_CMD.name, ROL_CMD.name, ROR_CMD.name
 ]
 
@@ -285,6 +286,12 @@ const ALU_STATES = [
     {name: "ADD-one3", transitions: `{"0": "1,N,ADD-run", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run"}`},
     {name: "ADD-norm", transitions: `{"O": "0,L", "I": "1,L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD-check-overflow", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD-check-overflow"}`},
     {name: "ADD-check-overflow", transitions: `{"0": "0,R,OVERFLOW-EQUAL-1", "1": "1,R,OVERFLOW-EQUAL-0"}`},
+
+    {name: "NEG", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": "${LAMBDA},L,NEG-1"}`},
+    {name: "NEG-1", transitions: `{"0": "1,L,NEG-BEGIN", "1": "0,L,", "${ALU_CHAR}": "${ALU_CHAR},R,NEG-OVERFLOW-CHECK"}`},
+    {name: "NEG-BEGIN", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,NEG-OVERFLOW-CHECK"}`},
+    {name: "NEG-OVERFLOW-CHECK", transitions: `{"0": "0,R,NO-OVERFLOW", "1": "1,R,NEG-OVERFLOW-ZEROS"}`},
+    {name: "NEG-OVERFLOW-ZEROS", transitions: `{"1": "1,R,NO-OVERFLOW", "0": "R", "${LAMBDA}": ",R,OVERFLOW"}`},
 
     // разность двух чисел
     {name: "SUB", transitions: `{"0": "0,R,SUB-sign0", "1": "1,R,SUB-sign1"}`},
