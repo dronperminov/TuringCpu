@@ -20,3 +20,23 @@ input[disabled].button {
     border-color: #888;
     cursor: default;
 }
+
+.select {
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 1px solid #808080;
+    padding: 0;
+    background: #fff;
+    font-size: 15px;
+    margin-right: 5px;
+}
+
+.select:focus {
+    outline: none;
+    border-bottom: 1px solid #90caf9;
+}
+
+.select:hover {
+    outline: none;
+    border-bottom: 1px solid #90caf9;
+}

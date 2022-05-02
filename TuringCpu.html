@@ -62,7 +62,11 @@ end:
         </div>
 
         <div class="footer">
-            <label><input type="checkbox" id="step-by-instructions-box" checked>Шагать по инструкциям</label>
+            <label>Шагать по <select id="step-type-box" class="select">
+                <option value="instructions" selected>инструкциям</option>
+                <option value="states">состояниям</option>
+                <option value="cells">ячейкам</option>
+            </select></label>
             <label><input type="checkbox" id="show-state-box" checked>Показывать состояние</label>
 
             <div class="right-part">

@@ -15,7 +15,7 @@ TuringCpu.prototype.InitControls = function() {
     this.stepBtn = document.getElementById('step-btn')
     this.resetBtn = document.getElementById('reset-btn')
     this.compileBtn = document.getElementById('compile-btn')
-    this.stepByInstructionsBox = document.getElementById('step-by-instructions-box')
+    this.stepTypeBox = document.getElementById('step-type-box')
     this.showStateBox = document.getElementById('show-state-box')
     this.stepsBox = document.getElementById('steps-box')
 
@@ -429,7 +429,7 @@ TuringCpu.prototype.GetInfoValues = function() {
         if (chars[i] in INFO_BLOCKS_COLORS) {
             let len = REGISTER_NAMES.indexOf(chars[i]) > -1 ? this.bitDepth : 1
             let value = chars.slice(i + 1, i + 1 + len).join('')
-            values[chars[i]] = value.replace('O', 0).replace('I', 1)
+            values[chars[i]] = value.replace(/O/gi, '0').replace(/I/gi, '1')
         }
     }
 

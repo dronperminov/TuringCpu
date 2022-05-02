@@ -42,9 +42,17 @@ TuringCpu.prototype.TuringStep = function() {
     if (this.IsNextEnd())
         this.turing.Step()
 
-    if (prevState == RUN_STATE && currState == 'FETCH' || currState == HALT) {
-        this.HighlightCurrLine()
-        return true
+    if (this.stepTypeBox.value == 'instructions') {
+        if (prevState == RUN_STATE && currState == 'FETCH' || currState == HALT) {
+            this.HighlightCurrLine()
+            return true
+        }
+    }
+    else if (this.stepTypeBox.value == 'states') {
+        if (prevState != currState || currState == HALT) {
+            this.HighlightCurrLine()
+            return true
+        }
     }
 
     return false
@@ -54,7 +62,7 @@ TuringCpu.prototype.Step = function() {
     if (this.IsEnd())
         return
 
-    if (this.stepByInstructionsBox.checked) {
+    if (this.stepTypeBox.value != 'cells') {
         while (!this.IsEnd() && !this.TuringStep())
             ;
     }
