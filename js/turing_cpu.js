@@ -17,6 +17,7 @@ TuringCpu.prototype.InitControls = function() {
     this.compileBtn = document.getElementById('compile-btn')
     this.stepByInstructionsBox = document.getElementById('step-by-instructions-box')
     this.showStateBox = document.getElementById('show-state-box')
+    this.stepsBox = document.getElementById('steps-box')
 
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })

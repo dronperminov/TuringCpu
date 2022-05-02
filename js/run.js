@@ -37,6 +37,8 @@ TuringCpu.prototype.TuringStep = function() {
     this.turing.Step()
     let currState = this.turing.state
 
+    this.stepsBox.innerHTML = 1 + +this.stepsBox.innerHTML
+
     if (this.IsNextEnd())
         this.turing.Step()
 
@@ -76,5 +78,6 @@ TuringCpu.prototype.Reset = function(withCompilation = false) {
     if (withCompilation)
         this.Compile()
 
+    this.stepsBox.innerHTML = '0'
     this.InitTuring()
 }

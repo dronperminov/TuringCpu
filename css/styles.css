@@ -35,6 +35,7 @@ body, head {
     background: #ddd;
     display: flex;
     align-items: center;
+    position: relative;
 }
 
 .footer-cell {
@@ -44,6 +45,11 @@ body, head {
 
 .footer-cell a {
     color: #2196f3;
+}
+
+.right-part {
+    position: absolute;
+    right: 5px;
 }
 
 .view {
