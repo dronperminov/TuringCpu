@@ -52,3 +52,9 @@
 .menu:hover .menu-items {
     display: block;
 }
+
+.menu-item:hover input {
+    background: #2196f3;
+    color: #fff;
+    border-bottom: 1px solid #fff;
+}

@@ -24,19 +24,28 @@ input[disabled].button {
 .select {
     box-sizing: border-box;
     border: none;
-    border-bottom: 1px solid #808080;
     padding: 0;
-    background: #fff;
+    background: #ddd;
     font-size: 15px;
     margin-right: 5px;
 }
 
-.select:focus {
-    outline: none;
-    border-bottom: 1px solid #90caf9;
+.number {
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 1px solid #808080;
+    padding: 0;
+    background: #eee;
 }
 
+.number:focus,
+.number:hover {
+    outline: none;
+}
+
+.select:focus,
 .select:hover {
     outline: none;
-    border-bottom: 1px solid #90caf9;
+    border-bottom: 1px solid #000;
+    margin-bottom: -1px;
 }

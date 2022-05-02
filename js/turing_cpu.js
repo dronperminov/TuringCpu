@@ -5,8 +5,8 @@ function TuringCpu(bitDepth, memoryCount) {
 
     this.InitControls()
     this.InitInfoBlocks()
-    this.Compile()
-    this.Reset()
+
+    this.Reset(true)
     this.RunProcess()
 }
 
@@ -15,15 +15,21 @@ TuringCpu.prototype.InitControls = function() {
     this.stepBtn = document.getElementById('step-btn')
     this.resetBtn = document.getElementById('reset-btn')
     this.compileBtn = document.getElementById('compile-btn')
+
     this.stepTypeBox = document.getElementById('step-type-box')
     this.showStateBox = document.getElementById('show-state-box')
     this.stepsBox = document.getElementById('steps-box')
+    this.bitDepthBox = document.getElementById('bit-depth-box')
+    this.memoryCountBox = document.getElementById('memory-count-box')
 
     this.runBtn.addEventListener('click', () => this.Run())
     this.stepBtn.addEventListener('click', () => { this.Stop(); this.Step() })
     this.resetBtn.addEventListener('click', () => this.Reset(false))
     this.compileBtn.addEventListener('click', () => this.Reset(true))
+
     this.showStateBox.addEventListener('change', () => this.UpdateView())
+    this.bitDepthBox.addEventListener('change', () => this.SetBitDepth())
+    this.memoryCountBox.addEventListener('change', () => this.SetMemoryCount())
 
     window.addEventListener('resize', () => this.Resize())
 }
@@ -504,4 +510,14 @@ TuringCpu.prototype.LoadExample = function(code) {
 
     this.codeInput.SetText(code)
     this.Reset(true)
+}
+
+TuringCpu.prototype.SetBitDepth = function() {
+    this.bitDepth = +this.bitDepthBox.value
+    this.Reset()
+}
+
+TuringCpu.prototype.SetMemoryCount = function() {
+    this.memoryCount = +this.memoryCountBox.value
+    this.Reset()
 }
