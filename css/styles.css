@@ -41,6 +41,7 @@ body, head {
     grid-area: left-header;
     background: #eee;
     padding: 5px;
+    position: relative;
 }
 
 .footer {

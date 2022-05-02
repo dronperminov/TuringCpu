@@ -349,7 +349,8 @@ TuringCpu.prototype.HideAllLines = function() {
 }
 
 TuringCpu.prototype.HighlightCurrLine = function() {
-    let chars = this.turing.tape.positive
+    let end = this.turing.tape.positive.indexOf(PROGRAM_END_CHAR)
+    let chars = this.turing.tape.positive.slice(0, end)
     let last = chars.lastIndexOf('@')
     let line = 0
 
@@ -494,6 +495,9 @@ TuringCpu.prototype.Resize = function() {
 }
 
 TuringCpu.prototype.LoadExample = function(code) {
+    if (!confirm("Вы уверены, что хотите загрузить пример? Текущая программа будет утрачена."))
+        return
+
     this.codeInput.SetText(code)
     this.Reset(true)
 }

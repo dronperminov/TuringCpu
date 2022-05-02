@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="css/code.css">
     <link rel="stylesheet" type="text/css" href="css/turing.css">
     <link rel="stylesheet" type="text/css" href="css/controls.css">
+    <link rel="stylesheet" type="text/css" href="css/menu.css">
 </head>
 <body>
     <div class="simulator">
@@ -17,6 +18,20 @@
             <input type="submit" class="button" value="Шаг" id="step-btn">
             <input type="submit" class="button" value="Сброс" id="reset-btn" >
             <input type="submit" class="button" value="Компилировать" id="compile-btn">
+            <div class="menu">
+                <div class="menu-icon">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="menu-items">
+                    <div class="menu-item" onclick="cpu.LoadExample(FIBONACCI_EXAMPLE)">Загрузить пример "Число Фибоначчи"</div>
+                    <div class="menu-item" onclick="cpu.LoadExample(EUCLID_EXAMPLE)">Загрузить пример "Алгоритм Евклида"</div>
+                    <div class="menu-item" onclick="cpu.LoadExample(COLLATZ_EXAMPLE)">Загрузить пример "Гипотеза Коллатца"</div>
+                    <div class="menu-item" onclick="cpu.LoadExample(MEMORY_EXAMPLE)">Загрузить пример "Память и стек"</div>
+                </div>
+            </div>
         </div>
         <div class="code">
             <div class="header">Программа на ассемблере</div>
