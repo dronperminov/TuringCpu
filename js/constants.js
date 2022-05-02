@@ -64,6 +64,12 @@ const TEST_CMD = { name: "TEST", args: 2, argTypes: ARITHMETIC_ARGS }
 
 const JMP_CMD = {name: 'JMP', args: 1, argTypes: [[LABEL_TYPE]] }
 
+const JO_CMD = {name: 'JO', args: 1, argTypes: [[LABEL_TYPE]] }
+const JNO_CMD = {name: 'JNO', args: 1, argTypes: [[LABEL_TYPE]] }
+
+const JS_CMD = {name: 'JS', args: 1, argTypes: [[LABEL_TYPE]] }
+const JNS_CMD = {name: 'JNS', args: 1, argTypes: [[LABEL_TYPE]] }
+
 const JZ_CMD = {name: 'JZ', args: 1, argTypes: [[LABEL_TYPE]] }
 const JNZ_CMD = {name: 'JNZ', args: 1, argTypes: [[LABEL_TYPE]] }
 
@@ -77,10 +83,20 @@ const JBE_CMD = {name: 'JBE', args: 1, argTypes: [[LABEL_TYPE]] }
 const JE_CMD = {name: 'JE', args: 1, argTypes: [[LABEL_TYPE]] }
 const JNE_CMD = {name: 'JNE', args: 1, argTypes: [[LABEL_TYPE]] }
 
+const JL_CMD = {name: 'JL', args: 1, argTypes: [[LABEL_TYPE]] }
+const JLE_CMD = {name: 'JLE', args: 1, argTypes: [[LABEL_TYPE]] }
+const JG_CMD = {name: 'JG', args: 1, argTypes: [[LABEL_TYPE]] }
+const JGE_CMD = {name: 'JGE', args: 1, argTypes: [[LABEL_TYPE]] }
+
 const JNA_CMD = {name: 'JNA', args: 1, argTypes: [[LABEL_TYPE]] }
 const JNAE_CMD = {name: 'JNAE', args: 1, argTypes: [[LABEL_TYPE]] }
 const JNB_CMD = {name: 'JNB', args: 1, argTypes: [[LABEL_TYPE]] }
 const JNBE_CMD = {name: 'JNBE', args: 1, argTypes: [[LABEL_TYPE]] }
+
+const JNL_CMD = {name: 'JNL', args: 1, argTypes: [[LABEL_TYPE]] }
+const JNLE_CMD = {name: 'JNLE', args: 1, argTypes: [[LABEL_TYPE]] }
+const JNG_CMD = {name: 'JNG', args: 1, argTypes: [[LABEL_TYPE]] }
+const JNGE_CMD = {name: 'JNGE', args: 1, argTypes: [[LABEL_TYPE]] }
 
 const COMMANDS = [
     MOV_CMD, HALT_CMD,
@@ -92,10 +108,14 @@ const COMMANDS = [
     AND_CMD, OR_CMD, XOR_CMD, SHL_CMD, SHR_CMD, TEST_CMD,
 
     JMP_CMD,
+    JO_CMD, JNO_CMD,
+    JS_CMD, JNS_CMD,
     JZ_CMD, JNZ_CMD,
     JC_CMD, JNC_CMD,
     JA_CMD, JAE_CMD, JB_CMD, JBE_CMD, JE_CMD, JNE_CMD,
-    JNA_CMD, JNAE_CMD, JNB_CMD, JNBE_CMD
+    JL_CMD, JLE_CMD, JG_CMD, JGE_CMD,
+    JNA_CMD, JNAE_CMD, JNB_CMD, JNBE_CMD,
+    JNL_CMD, JNLE_CMD, JNG_CMD, JNGE_CMD,
 ]
 
 const UNARY_COMMAND_NAMES = [
@@ -116,10 +136,14 @@ const ALU_COMMAND_NAMES = [
 
 const LABEL_COMMAND_NAMES = [
     JMP_CMD.name,
+    JO_CMD.name, JNO_CMD.name,
+    JS_CMD.name, JNS_CMD.name,
     JZ_CMD.name, JNZ_CMD.name,
     JC_CMD.name, JNC_CMD.name,
     JA_CMD.name, JAE_CMD.name, JB_CMD.name, JBE_CMD.name, JE_CMD.name, JNE_CMD.name,
-    JNA_CMD.name, JNAE_CMD.name, JNB_CMD.name, JNBE_CMD.name
+    JL_CMD.name, JLE_CMD.name, JG_CMD.name, JGE_CMD.name,
+    JNA_CMD.name, JNAE_CMD.name, JNB_CMD.name, JNBE_CMD.name,
+    JNL_CMD.name, JNLE_CMD.name, JNG_CMD.name, JNGE_CMD.name,
 ]
 
 const CONSTANT_REGEXP = "-?\\d+d?\\b|\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"
