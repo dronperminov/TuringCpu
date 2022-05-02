@@ -25,17 +25,29 @@ TuringCpu.prototype.Stop = function() {
 }
 
 TuringCpu.prototype.IsEnd = function() {
-    return this.turing.state == HALT
+    return this.turing.state == HALT || this.turing.state == UNDERFLOW_STATE
 }
 
 TuringCpu.prototype.IsNextEnd = function() {
     return this.turing.state == FETCH_STATE && this.turing.tape.GetChar() == PROGRAM_END_CHAR
 }
 
+TuringCpu.prototype.CheckErrors = function() {
+    if (this.turing.state == UNDERFLOW_STATE) {
+        alert("Ошибка! Стек пуст!")
+        return true
+    }
+
+    return false
+}
+
 TuringCpu.prototype.TuringStep = function() {
     let prevState = this.turing.state
     this.turing.Step()
     let currState = this.turing.state
+
+    if (this.CheckErrors())
+        return false
 
     this.stepsBox.innerHTML = 1 + +this.stepsBox.innerHTML
 

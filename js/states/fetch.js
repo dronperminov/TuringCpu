@@ -528,6 +528,7 @@ TuringCpu.prototype.Push = function() {
 
 TuringCpu.prototype.PopRegister = function(register) {
     let move = {}
+    let underflow = {}
     let end = {}
     let start = {}
     let check = {}
@@ -538,7 +539,13 @@ TuringCpu.prototype.PopRegister = function(register) {
         fix[char] = 'L'
     }
 
-    move[STACK_CHAR] = `${STACK_CHAR},R,POP-REGISTER-${register}-END`
+    move[STACK_CHAR] = `${STACK_CHAR},R,POP-REGISTER-${register}-UNDERFLOW`
+
+    underflow[LAMBDA] = `${LAMBDA},N,${UNDERFLOW_STATE}`
+    underflow['0'] = `0,R,POP-REGISTER-${register}-END`
+    underflow['1'] = `1,R,POP-REGISTER-${register}-END`
+    underflow['#'] = `#,R,POP-REGISTER-${register}-END`
+
     end['0'] = 'R'
     end['1'] = 'R'
     end['#'] = 'R'
@@ -583,6 +590,7 @@ TuringCpu.prototype.PopRegister = function(register) {
         this.turing.AddState(`POP-REGISTER-${register}-WRITE-${digit}`, write)
     }
 
+    this.turing.AddState(`POP-REGISTER-${register}-UNDERFLOW`, underflow)
     this.turing.AddState(`POP-REGISTER-${register}`, move)
     this.turing.AddState(`POP-REGISTER-${register}-END`, end)
     this.turing.AddState(`POP-REGISTER-${register}-START`, start)
@@ -599,6 +607,12 @@ TuringCpu.prototype.Pop = function() {
     }
 
     this.turing.AddState('POP', states)
+}
+
+TuringCpu.prototype.StackUnderflow = function() {
+    let states = {}
+    states[LAMBDA] = HALT
+    this.turing.AddState(UNDERFLOW_STATE, states)
 }
 
 TuringCpu.prototype.FetchFlags = function() {
@@ -1024,6 +1038,7 @@ TuringCpu.prototype.InitTuringFetchStates = function() {
     this.Push()
     this.PushMemory()
     this.Pop()
+    this.StackUnderflow()
 
     this.DecAddress()
 
