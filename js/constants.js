@@ -1,7 +1,15 @@
+const OVERFLOW_FLAG = "OF"
+const SIGN_FLAG = "SF"
 const ZERO_FLAG = "ZF"
 const CARRY_FLAG = "CF"
 
-const FLAG_NAMES = [ZERO_FLAG, CARRY_FLAG]
+const FLAG_NAMES = [
+    OVERFLOW_FLAG,
+    SIGN_FLAG,
+    CARRY_FLAG,
+    ZERO_FLAG
+]
+
 const REGISTER_NAMES = ["A", "B", "C", "D", "E", "F"]
 
 const REGISTER_TYPE = 'reg'
@@ -131,8 +139,10 @@ const INFO_BLOCKS_COLORS = {
     "D": { name: "D", border: "hsl(212, 98%, 59%)", background: "hsl(212, 98%, 79%)"},
     "E": { name: "E", border: "hsl(187, 100%, 42%)", background: "hsl(187, 100%, 62%)"},
     "F": { name: "F", border: "hsl(240, 60%, 65%)", background: "hsl(240, 60%, 85%)"},
+    "OF": { name: "OF", border: "hsl(180, 60%, 65%)", background: "hsl(180, 60%, 85%)"},
+    "SF": { name: "SF", border: "hsl(140, 60%, 65%)", background: "hsl(140, 60%, 85%)"},
     "ZF": { name: "ZF", border: "hsl(60, 60%, 65%)", background: "hsl(60, 60%, 85%)"},
-    "CF": { name: "CF", border: "hsl(80, 60%, 65%)", background: "hsl(80, 60%, 85%)"},
+    "CF": { name: "CF", border: "hsl(100, 60%, 65%)", background: "hsl(100, 60%, 85%)"},
 }
 
 function IsRegister(arg) {
@@ -184,10 +194,13 @@ const PROGRAM_CHAR = 'PRG'
 const PROGRAM_END_CHAR = 'END'
 const ALU_CHAR = 'ALU'
 const ALU_CARRY_CHAR = '$'
-const ZERO_FLAG_CHAR = 'ZF'
-const CARRY_FLAG_CHAR = 'CF'
 const MEMORY_CHAR = 'MEM'
 const STACK_CHAR = 'STK'
+
+const ZERO_FLAG_CHAR = 'ZF'
+const CARRY_FLAG_CHAR = 'CF'
+const SIGN_FLAG_CHAR = 'SF'
+const OVERFLOW_FLAG_CHAR = 'OF'
 
 const RUN_STATE = 'RUN'
 const RETURN_RUN_STATE = 'RETURN-RUN'
@@ -197,12 +210,26 @@ const FETCH_STATE = 'FETCH'
 const WRITE_BACK_STATE = 'WRITE-BACK'
 const WRITE_RESULT_STATE = 'WRITE-RESULT'
 
+const FLAG_CHARS = [
+    OVERFLOW_FLAG_CHAR,
+    SIGN_FLAG_CHAR,
+    ZERO_FLAG_CHAR,
+    CARRY_FLAG_CHAR,
+]
+
+const SYSTEM_CHARS = [
+    PROGRAM_CHAR,
+    PROGRAM_END_CHAR,
+    ALU_CHAR,
+    MEMORY_CHAR,
+    STACK_CHAR
+]
+
 const PARTS_ORDER = [
     PROGRAM_CHAR,
     ...REGISTER_NAMES,
     ALU_CHAR,
-    ZERO_FLAG_CHAR,
-    CARRY_FLAG_CHAR,
+    ...FLAG_CHARS,
     MEMORY_CHAR,
     STACK_CHAR
 ]
@@ -210,62 +237,73 @@ const PARTS_ORDER = [
 const TURING_ALPHABET = [
     LAMBDA,
     '0', '1',
-    'O', 'I', '#', '@',
+    'O', 'I', '#', '@', '&',
 
     PROGRAM_CHAR, PROGRAM_END_CHAR,
     ...COMMANDS.map((v) => v.name),
-    '&',
 
     ALU_CHAR,
-    ZERO_FLAG_CHAR, CARRY_FLAG_CHAR,
+    ...FLAG_CHARS,
 
     MEMORY_CHAR,
     STACK_CHAR,
     ...REGISTER_NAMES
 ]
 
-const TURING_STATES = [
-    {name: "move-begin", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "O": "0,L,move-begin", "I": "1,L,move-begin", "${ALU_CHAR}": "${ALU_CHAR},R,check-zero", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
-    {name: "return-to-alu", transitions: `{"0": "L",   "1": "L", "${ZERO_FLAG_CHAR}": "L", "${CARRY_FLAG_CHAR}": "L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
-
-    {name: "write-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-carry", "I": "1,R,write-carry", "#": ",R,write-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-carry-begin"}`},
-    {name: "write-no-carry", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "O": "0,R,write-no-carry", "I": "1,R,write-no-carry", "#": ",R,write-no-carry", "${ZERO_FLAG_CHAR}": "R", "${CARRY_FLAG_CHAR}": "${CARRY_FLAG_CHAR},R,write-no-carry-begin"}`},
-    {name: "write-carry-begin", transitions: `{"0": "1,L,move-begin", "1": "1,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
-    {name: "write-no-carry-begin", transitions: `{"0": "0,L,move-begin", "1": "0,L,move-begin", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
-
-    {name: "write-zero", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "${CARRY_FLAG_CHAR}": "R", "${ZERO_FLAG_CHAR}": "${ZERO_FLAG_CHAR},R,write-zero-begin"}`},
-    {name: "write-no-zero", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "R", "${CARRY_FLAG_CHAR}": "R", "${ZERO_FLAG_CHAR}": "${ZERO_FLAG_CHAR},R,write-no-zero-begin"}`},
-    {name: "write-zero-begin", transitions: `{"0": "1,L,return-to-alu", "1": "1,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
-    {name: "write-no-zero-begin", transitions: `{"0": "0,L,return-to-alu", "1": "0,L,return-to-alu", "${LAMBDA}": "L", "${CARRY_FLAG_CHAR}": "L", "${ZERO_FLAG_CHAR}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,${RETURN_RUN_STATE}"}`},
-
-    {name: "check-zero", transitions: `{"0": "R", "1": "1,R,write-no-zero", "${LAMBDA}": ",N,write-zero"}`},
-    {name: "normalize", transitions: `{"0": "L", "1": "L", "I": "1,L,normalize", "O": "0,L,normalize", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,write-no-carry", "${ALU_CARRY_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+const ALU_STATES = [
+    {name: "BITS-FIX", transitions: `{"0": "L", "1": "L", "O": "0,L", "I": "1,L", "${LAMBDA}": "L", "${ALU_CHAR}": "${ALU_CHAR},R,NO-OVERFLOW", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,NO-OVERFLOW"}`},
 
     // инкремент
-    {name: "INC",   transitions: `{"0": "R",              "1": "R",      "${LAMBDA}": ",L,INC-1"}`},
-    {name: "INC-1", transitions: `{"0": "1,N,write-no-carry", "1": "0,L,",   "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+    {name: "INC", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,INC-1"}`},
+    {name: "INC-1", transitions: `{"0": "1,L,INC-BEGIN", "1": "0,L,", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,INC-OVERFLOW-CHECK"}`},
+    {name: "INC-BEGIN", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CHAR},R,INC-OVERFLOW-CHECK", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,INC-OVERFLOW-CHECK"}`},
+    {name: "INC-OVERFLOW-CHECK", transitions: `{"0": "0,R,NO-OVERFLOW", "1": "1,R,INC-OVERFLOW-ZEROS"}`},
+    {name: "INC-OVERFLOW-ZEROS", transitions: `{"1": "1,R,NO-OVERFLOW", "0": "R", "${LAMBDA}": ",R,OVERFLOW"}`},
 
     // декремент
     {name: "DEC",   transitions: `{"0": "R",              "1": "R",           "${LAMBDA}": ",L,DEC-1"}`},
-    {name: "DEC-1", transitions: `{"0": "1,L,DEC-1", "1": "0,N,write-no-carry",   "${ALU_CHAR}": "${ALU_CHAR},R,write-carry"}`},
+    {name: "DEC-1", transitions: `{"0": "1,L,DEC-1", "1": "0,L,DEC-BEGIN",   "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,DEC-OVERFLOW-CHECK"}`},
+    {name: "DEC-BEGIN", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CHAR},R,DEC-OVERFLOW-CHECK", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,DEC-OVERFLOW-CHECK"}`},
+    {name: "DEC-OVERFLOW-CHECK", transitions: `{"1": "1,R,NO-OVERFLOW", "0": "0,R,DEC-OVERFLOW-ONES"}`},
+    {name: "DEC-OVERFLOW-ONES", transitions: `{"0": "0,R,NO-OVERFLOW", "1": "R", "${LAMBDA}": ",R,OVERFLOW"}`},
 
     // сложение двух чисел
-    {name: "ADD",       transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ADD-check", "I": "R", "#": "R", "O": "R"}`},
-    {name: "ADD-check", transitions: `{"0": ",L,ADD-zero", "1": ",L,ADD-one", "#": ",L,normalize" }`},
-    {name: "ADD-zero",  transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-zero2" }`},
-    {name: "ADD-one",   transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-one2" }`},
-    {name: "ADD-zero2", transitions: `{"0": "O,N,ADD", "1": "I,N,ADD", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "O": "L"}`},
-    {name: "ADD-one2",  transitions: `{"0": "I,N,ADD", "1": "O,L,ADD-one3", "I": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "O": "L"}`},
-    {name: "ADD-one3",  transitions: `{"0": "1,N,ADD", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD"}`},
+    {name: "ADD", transitions: `{"0": "0,R,ADD-sign0", "1": "1,R,ADD-sign1"}`},
+    {name: "ADD-sign0", transitions: `{"1": "R", "0": "R", "#": "#,R,ADD-sign0-check"}`},
+    {name: "ADD-sign1", transitions: `{"1": "R", "0": "R", "#": "#,R,ADD-sign1-check"}`},
+    {name: "ADD-sign0-check", transitions: `{"1": "1,R,ADD-run", "0": "0,R,ADD-sign0-write"}`},
+    {name: "ADD-sign1-check", transitions: `{"0": "0,R,ADD-run", "1": "1,R,ADD-sign1-write"}`},
+    {name: "ADD-sign0-write", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "O,L,ADD-check"}`},
+    {name: "ADD-sign1-write", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "I,L,ADD-check"}`},
+
+    {name: "ADD-run", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ADD-check", "I": "R", "#": "R", "O": "R"}`},
+    {name: "ADD-check", transitions: `{"0": ",L,ADD-zero", "1": ",L,ADD-one", "#": ",L,ADD-norm" }`},
+    {name: "ADD-zero", transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-zero2" }`},
+    {name: "ADD-one", transitions: `{"0": "L", "1": "L", "#": "#,L,ADD-one2" }`},
+    {name: "ADD-zero2", transitions: `{"0": "O,N,ADD-run", "1": "I,N,ADD-run", "I": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD-run", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run", "O": "L"}`},
+    {name: "ADD-one2", transitions: `{"0": "I,N,ADD-run", "1": "O,L,ADD-one3", "I": "L", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run", "O": "L"}`},
+    {name: "ADD-one3", transitions: `{"0": "1,N,ADD-run", "1": "0,L,ADD-one3", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD-run"}`},
+    {name: "ADD-norm", transitions: `{"O": "0,L", "I": "1,L", "${ALU_CHAR}": "${ALU_CHAR},R,ADD-check-overflow", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,ADD-check-overflow"}`},
+    {name: "ADD-check-overflow", transitions: `{"0": "0,R,OVERFLOW-EQUAL-1", "1": "1,R,OVERFLOW-EQUAL-0"}`},
 
     // разность двух чисел
-    {name: "SUB", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,SUB-check"}`},
-    {name: "SUB-check", transitions: `{"0": ",L,SUB-move0", "1": ",L,SUB-move1", "#": ",L,normalize"}`},
+    {name: "SUB", transitions: `{"0": "0,R,SUB-sign0", "1": "1,R,SUB-sign1"}`},
+    {name: "SUB-sign0", transitions: `{"1": "R", "0": "R", "#": "#,R,SUB-sign0-check"}`},
+    {name: "SUB-sign1", transitions: `{"1": "R", "0": "R", "#": "#,R,SUB-sign1-check"}`},
+    {name: "SUB-sign0-check", transitions: `{"0": "0,R,SUB-run", "1": "1,R,SUB-sign0-write"}`},
+    {name: "SUB-sign1-check", transitions: `{"1": "1,R,SUB-run", "0": "0,R,SUB-sign1-write"}`},
+    {name: "SUB-sign0-write", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "O,L,SUB-check"}`},
+    {name: "SUB-sign1-write", transitions: `{"0": "R", "1": "R", "${LAMBDA}": "I,L,SUB-check"}`},
+
+    {name: "SUB-run", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,SUB-check"}`},
+    {name: "SUB-check", transitions: `{"0": ",L,SUB-move0", "1": ",L,SUB-move1", "#": ",L,SUB-norm"}`},
     {name: "SUB-move0", transitions: `{"0": "L", "1": "L", "#": "#,L,SUB-sub0"}`},
     {name: "SUB-move1", transitions: `{"0": "L", "1": "L", "#": "#,L,SUB-sub1"}`},
-    {name: "SUB-sub0", transitions: `{"0": "O,N,SUB", "1": "I,N,SUB", "I": "L", "O": "L"}`},
-    {name: "SUB-sub1", transitions: `{"0": "I,L,SUB-sub-carry", "1": "O,N,SUB", "I": "L", "O": "L"}`},
-    {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SUB", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SUB"}`},
+    {name: "SUB-sub0", transitions: `{"0": "O,N,SUB-run", "1": "I,N,SUB-run", "I": "L", "O": "L"}`},
+    {name: "SUB-sub1", transitions: `{"0": "I,L,SUB-sub-carry", "1": "O,N,SUB-run", "I": "L", "O": "L"}`},
+    {name: "SUB-sub-carry", transitions: `{"0": "1,L,SUB-sub-carry", "1": "0,N,SUB-run", "${ALU_CHAR}": "${ALU_CARRY_CHAR},R,SUB-run", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SUB-run"}`},
+    {name: "SUB-norm", transitions: `{"O": "0,L", "I": "1,L", "${ALU_CHAR}": "${ALU_CHAR},R,SUB-check-overflow", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SUB-check-overflow"}`},
+    {name: "SUB-check-overflow", transitions: `{"0": "0,R,OVERFLOW-EQUAL-1", "1": "1,R,OVERFLOW-EQUAL-0"}`},
 
     // умножение
     {name: "MUL", transitions: `{"0": "O,R,MUL-move0", "1": "O,R,MUL-move1", "#": ",R,MUL-norm1", "O": "R"}`},
@@ -280,7 +318,7 @@ const TURING_STATES = [
     {name: "MUL-norm2", transitions: `{"0": "L", "1": "L", "I": "1,L,MUL-norm2", "O": "0,L,MUL-norm2", "${ALU_CHAR}": "${ALU_CHAR},R,MUL-pre", "${LAMBDA}":  "L"}`},
     {name: "MUL-pre", transitions: `{"0": "R", "1": "R", "${LAMBDA}":  ",R,MUL-go-back"}`},
 
-    {name: "MUL-clean", transitions: `{"0": ",L,MUL-clean", "1": ",L,MUL-clean", "${LAMBDA}": ",L,normalize"}`},
+    {name: "MUL-clean", transitions: `{"0": ",L,MUL-clean", "1": ",L,MUL-clean", "${LAMBDA}": ",L,BITS-FIX"}`}, // TODO
     {name: "MUL-go-shift", transitions: `{"0": "R", "1": "R", "#": "#,N,MUL-shift", "I": "1,R,MUL-go-shift", "O": "0,R,MUL-go-shift", "${LAMBDA}": "R"}`},
     {name: "MUL-norm", transitions: `{"0": "L", "1": "L", "I": "1,L,MUL-norm", "O": "0,L,MUL-norm", "${ALU_CHAR}": "${ALU_CHAR},R,MUL-go-shift", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,MUL-go-shift"}`},
     {name: "MUL-back2", transitions: `{"0": "R", "1": "R", "I": "I,L,MUL-add", "O": "O,L,MUL-add"}`},
@@ -323,11 +361,11 @@ const TURING_STATES = [
     {name: "DIV-clear", transitions: `{"0": "R", "1": "R", "#": "#,R,DIV-clear2", "I": "1,R,DIV-clear", "O": "0,R,DIV-clear", "${LAMBDA}": "R"}`},
     {name: "DIV-clear2", transitions: `{"I": "1,R,DIV-clear2", "O": "0,R,DIV-clear2", "${LAMBDA}": ",L,DIV-check"}`},
     {name: "DIV-fin", transitions: `{"0": ",R,DIV-fin", "1": ",R,DIV-fin", "#": ",R,DIV-fin", "I": ",R,DIV-fin", "O": ",R,DIV-fin", "${LAMBDA}": ",L,DIV-return"}`},
-    {name: "DIV-return", transitions: `{"#": ",L,write-no-carry", "${LAMBDA}": "L"}`},
+    {name: "DIV-return", transitions: `{"#": ",L,NO-OVERFLOW", "${LAMBDA}": "L"}`}, // TODO!
 
     // логическое И
     {name: "AND", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,AND-check"}`},
-    {name: "AND-check", transitions: `{"0": ",L,AND-left0", "1": ",L,AND-left1", "#": ",L,normalize"}`},
+    {name: "AND-check", transitions: `{"0": ",L,AND-left0", "1": ",L,AND-left1", "#": ",L,BITS-FIX"}`},
     {name: "AND-zero", transitions: `{"0": "O,N,AND", "1": "O,N,AND", "I": "L", "O": "L"}`},
     {name: "AND-one", transitions: `{"0": "O,N,AND", "1": "I,N,AND", "I": "L", "O": "L"}`},
     {name: "AND-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,AND-zero"}`},
@@ -335,7 +373,7 @@ const TURING_STATES = [
 
     // логическое ИЛИ
     {name: "OR", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,OR-check"}`},
-    {name: "OR-check", transitions: `{"0": ",L,OR-left0", "1": ",L,OR-left1", "#": ",L,normalize"}`},
+    {name: "OR-check", transitions: `{"0": ",L,OR-left0", "1": ",L,OR-left1", "#": ",L,BITS-FIX"}`},
     {name: "OR-zero", transitions: `{"0": "O,N,OR", "1": "I,N,OR", "I": "L", "O": "L"}`},
     {name: "OR-one", transitions: `{"0": "I,N,OR", "1": "I,N,OR", "I": "L", "O": "L"}`},
     {name: "OR-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,OR-zero"}`},
@@ -343,19 +381,19 @@ const TURING_STATES = [
 
     // логическое исключающее ИЛИ
     {name: "XOR", transitions: `{"0": "R", "1": "R", "#": "R", "I": "R", "O": "R", "${LAMBDA}": ",L,XOR-check"}`},
-    {name: "XOR-check", transitions: `{"0": ",L,XOR-left0", "1": ",L,XOR-left1", "#": ",L,normalize"}`},
+    {name: "XOR-check", transitions: `{"0": ",L,XOR-left0", "1": ",L,XOR-left1", "#": ",L,BITS-FIX"}`},
     {name: "XOR-zero", transitions: `{"0": "O,N,XOR", "1": "I,N,XOR", "I": "L", "O": "L"}`},
     {name: "XOR-one", transitions: `{"0": "I,N,XOR", "1": "O,N,XOR", "I": "L", "O": "L"}`},
     {name: "XOR-left0", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-zero"}`},
     {name: "XOR-left1", transitions: `{"0": "L", "1": "L", "#": "#,L,XOR-one"}`},
 
     // логическая инверсия
-    {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",L,write-no-carry"}`},
+    {name: "NOT", transitions: `{"0": "1,R", "1": "0,R", "${LAMBDA}": ",R,NO-OVERFLOW"}`},
 
     // битовый сдвиг вправо
     {name: "SHR", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHR-test"}`},
     {name: "SHR-test", transitions: `{"0": "1,L,SHR-test", "1": "0,L,SHR-pre", "#": ",R,SHR-clear"}`},
-    {name: "SHR-clear", transitions: `{"0": ",R,SHR-clear", "1": ",R,SHR-clear", "${LAMBDA}": "${LAMBDA},L,normalize"}`},
+    {name: "SHR-clear", transitions: `{"0": ",R,SHR-clear", "1": ",R,SHR-clear", "${LAMBDA}": "${LAMBDA},L,BITS-FIX"}`},
     {name: "SHR-pre", transitions: `{"0": "L", "1": "L", "#": "L", "${ALU_CHAR}": "${ALU_CHAR},R,SHR-make"}`},
     {name: "SHR-make", transitions: `{"0": "0,R,SHR-zero", "1": "0,R,SHR-one"}`},
     {name: "SHR-zero", transitions: `{"0": "R", "1": "0,R,SHR-one", "#": "#,R,SHR"}`},
@@ -364,7 +402,7 @@ const TURING_STATES = [
     // битовый сдвиг влево
     {name: "SHL", transitions: `{"0": "R", "1": "R", "#": "R", "${LAMBDA}": ",L,SHL-test"}`},
     {name: "SHL-test", transitions: `{"0": "1,L,SHL-test", "1": "0,L,SHL-pre", "#": ",R,SHL-clear"}`},
-    {name: "SHL-clear", transitions: `{"0": ",R,SHL-clear", "1": ",R,SHL-clear", "${LAMBDA}": "${LAMBDA},L,normalize"}`},
+    {name: "SHL-clear", transitions: `{"0": ",R,SHL-clear", "1": ",R,SHL-clear", "${LAMBDA}": "${LAMBDA},L,BITS-FIX"}`},
     {name: "SHL-pre", transitions: `{"0": "L", "1": "L", "#": "#,L,SHL-make"}`},
     {name: "SHL-make", transitions: `{"0": "0,L,SHL-zero", "1": "0,L,SHL-one"}`},
     {name: "SHL-zero", transitions: `{"0": "L", "1": "0,L,SHL-one", "${ALU_CHAR}": "${ALU_CHAR},R,SHL", "${ALU_CARRY_CHAR}": "${ALU_CARRY_CHAR},R,SHL"}`},
@@ -373,13 +411,13 @@ const TURING_STATES = [
     {name: "ROL", transitions: `{"0": ",R,ROL-end0", "1": ",R,ROL-end1"}`},
     {name: "ROL-end0", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ROL-0"}`},
     {name: "ROL-end1", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ROL-1"}`},
-    {name: "ROL-0", transitions: `{"0": "L", "1": "0,L,ROL-1", "${LAMBDA}": "0,N,write-no-carry"}`},
-    {name: "ROL-1", transitions: `{"0": "1,L,ROL-0", "1": "L", "${LAMBDA}": "1,N,write-no-carry"}`},
+    {name: "ROL-0", transitions: `{"0": "L", "1": "0,L,ROL-1", "${LAMBDA}": "0,R,NO-OVERFLOW"}`},
+    {name: "ROL-1", transitions: `{"0": "1,L,ROL-0", "1": "L", "${LAMBDA}": "1,R,NO-OVERFLOW"}`},
 
     {name: "ROR", transitions: `{"0": "R", "1": "R", "${LAMBDA}": ",L,ROR-end"}`},
     {name: "ROR-end0", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ROR-0"}`},
     {name: "ROR-end1", transitions: `{"0": "L", "1": "L", "${ALU_CHAR}": "${ALU_CHAR},R,ROR-1"}`},
     {name: "ROR-end", transitions: `{"0": ",L,ROR-end0", "1": ",L,ROR-end1"}`},
-    {name: "ROR-0", transitions: `{"0": "0,R,ROR-0", "1": "0,R,ROR-1", "${LAMBDA}": "0,N,write-no-carry"}`},
-    {name: "ROR-1", transitions: `{"0": "1,R,ROR-0", "1": "1,R,ROR-1", "${LAMBDA}": "1,N,write-no-carry"}`},
+    {name: "ROR-0", transitions: `{"0": "0,R,ROR-0", "1": "0,R,ROR-1", "${LAMBDA}": "0,R,NO-OVERFLOW"}`},
+    {name: "ROR-1", transitions: `{"0": "1,R,ROR-0", "1": "1,R,ROR-1", "${LAMBDA}": "1,R,NO-OVERFLOW"}`},
 ]

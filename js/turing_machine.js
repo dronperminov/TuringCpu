@@ -136,13 +136,13 @@ TuringMachine.prototype.MakeTapeCell = function(cell, char, index, begin, end, s
     else if (char == LAMBDA) {
         cell.classList.add('turing-tape-lambda-cell')
     }
-    else if ([ALU_CHAR, MEMORY_CHAR, STACK_CHAR, PROGRAM_CHAR, PROGRAM_END_CHAR].indexOf(char) > -1) {
+    else if (SYSTEM_CHARS.indexOf(char) > -1) {
         cell.classList.add('turing-tape-system-cell')
     }
     else if (REGISTER_NAMES.indexOf(char) > -1 && skipProg) {
         cell.classList.add('turing-tape-register-cell')
     }
-    else if (char == ZERO_FLAG_CHAR || char == CARRY_FLAG_CHAR) {
+    else if (FLAG_CHARS.indexOf(char) > -1) {
         cell.classList.add('turing-tape-flag-cell')
     }
     else if (COMMANDS.map((v) => v.name).indexOf(char) > -1 && !skipProg) {

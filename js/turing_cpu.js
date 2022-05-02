@@ -292,8 +292,9 @@ TuringCpu.prototype.InitTuring = function() {
     let parts = {}
     parts[PROGRAM_CHAR] = this.InitTuringProgram()
     parts[ALU_CHAR] = this.InitTuringALU()
-    parts[ZERO_FLAG_CHAR] = [ZERO_FLAG_CHAR, '0', LAMBDA]
-    parts[CARRY_FLAG_CHAR] = [CARRY_FLAG_CHAR, '0', LAMBDA]
+
+    for (let flag of FLAG_CHARS)
+        parts[flag] = [flag, '0', LAMBDA]
 
     for (let name of REGISTER_NAMES)
         parts[name] = this.InitTuringRegister(name)
@@ -312,8 +313,9 @@ TuringCpu.prototype.InitTuring = function() {
 
     this.InitTuringProgramStates()
     this.InitTuringFetchStates()
+    this.InitTuringFlagsStates()
 
-    for (let state of TURING_STATES)
+    for (let state of ALU_STATES)
         this.turing.AddState(state.name, JSON.parse(state.transitions))
 
     this.turing.SetState(RUN_STATE)
@@ -458,7 +460,7 @@ TuringCpu.prototype.ConvertToUnsigned = function(value, bitDepth) {
     if (value >= 0)
         return value
 
-    return (1 << bitDepth) + value - 1
+    return (1 << bitDepth) + value
 }
 
 TuringCpu.prototype.UpdateView = function() {
