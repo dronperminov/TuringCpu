@@ -19,6 +19,12 @@
     overflow: auto;
 }
 
+@media (max-width: 1000px) {
+    .code-area {
+        height: calc(100vh - 91px);
+    }
+}
+
 .code-input {
     resize: none;
     border: none;

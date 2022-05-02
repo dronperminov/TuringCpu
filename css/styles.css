@@ -24,6 +24,19 @@ body, head {
     "footer footer";
 }
 
+@media (max-width: 1000px) {
+    .simulator {
+        height: auto;
+        grid-template-columns: 100%;
+        grid-template-rows: 50px auto auto 30px;
+        grid-template-areas:
+        "left-header"
+        "code"
+        "view"
+        "footer";
+    }
+}
+
 .controls {
     grid-area: left-header;
     background: #eee;
