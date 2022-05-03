@@ -146,7 +146,7 @@ const LABEL_COMMAND_NAMES = [
     JNL_CMD.name, JNLE_CMD.name, JNG_CMD.name, JNGE_CMD.name,
 ]
 
-const CONSTANT_REGEXP = "-?\\d+d?\\b|\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"
+const CONSTANT_REGEXP = "-\\d+d?\\b|\\b(\\d+d?|[01]+b|0b[01]+|0o[0-7]+|0x[\\da-fA-F]+)\\b"
 const LABEL_REGEXP = "[.a-zA-Z]\\w*"
 
 const HIGHTLIGHT_RULES = [

@@ -2,6 +2,7 @@ function HighlightInput(editableId, highlightId, rules) {
     this.editableBox = document.getElementById(editableId)
     this.highlightBox = document.getElementById(highlightId)
     this.rules = rules
+    this.tabSpaces = '    '
 
     this.editableBox.addEventListener('input', () => this.Highlight())
     this.editableBox.addEventListener('cnahge', () => this.Highlight())
@@ -11,7 +12,7 @@ function HighlightInput(editableId, highlightId, rules) {
 }
 
 // TODO: shift lines
-HighlightInput.prototype.InsertTab = function(spaces = '    ') {
+HighlightInput.prototype.InsertTab = function() {
     let start = this.editableBox.selectionStart
     let end = this.editableBox.selectionEnd
 
@@ -19,14 +20,38 @@ HighlightInput.prototype.InsertTab = function(spaces = '    ') {
     let before = text.substr(0, start)
     let after = text.substr(end)
 
-    this.SetText(`${before}${spaces}${after}`)
-    this.editableBox.selectionStart = start + spaces.length
-    this.editableBox.selectionEnd = start + spaces.length
+    this.SetText(`${before}${this.tabSpaces}${after}`)
+    this.editableBox.selectionStart = start + this.tabSpaces.length
+    this.editableBox.selectionEnd = start + this.tabSpaces.length
 }
 
+HighlightInput.prototype.GetLastLineSpaces = function(text) {
+    let spaces = ''
+
+    for (let begin = text.lastIndexOf('\n'); text[begin + 1] == ' '; begin++)
+        spaces += ' '
+
+    return spaces
+}
+
+HighlightInput.prototype.InsertEnter = function() {
+    let start = this.editableBox.selectionStart
+    let end = this.editableBox.selectionEnd
+
+    let text = this.GetText()
+    let before = text.substr(0, start)
+    let after = text.substr(end)
+    let spaces = this.GetLastLineSpaces(before)
+
+    this.SetText(`${before}\n${spaces}${after}`)
+    this.editableBox.selectionStart = start + 1 + spaces.length
+    this.editableBox.selectionEnd = start + 1 + spaces.length
+}
+
+// TODO: history, backspace
 HighlightInput.prototype.KeyDown = function(e) {
     if (e.key === 'Enter') {
-        document.execCommand('insertLineBreak')
+        this.InsertEnter()
         e.preventDefault()
     }
     else if (e.key == 'Tab') {
