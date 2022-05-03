@@ -272,13 +272,15 @@ TuringCpu.prototype.InitTuringProgramStates = function() {
     let fixOne = {}
 
     for (let char of TURING_ALPHABET) {
-        returnState[char] = char != PROGRAM_CHAR ? 'L' : `${PROGRAM_CHAR},R,${RUN_STATE}`
+        returnState[char] = 'L'
         runState[char] = 'R'
     }
 
+    returnState[PROGRAM_CHAR] = `${PROGRAM_CHAR},R,${RUN_STATE}`
     returnState['~'] = `${LAMBDA},R,${FETCH_STATE}`
     returnState['O'] = `0,L,${RETURN_RUN_STATE}`
     returnState['I'] = `1,L,${RETURN_RUN_STATE}`
+    returnState['@'] = `@,R,${RUN_STATE}`
 
     runState['#'] = `@,R,${FETCH_STATE}`
     runState['@'] = `R`
