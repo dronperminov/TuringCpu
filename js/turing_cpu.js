@@ -307,7 +307,7 @@ TuringCpu.prototype.InitTuring = function() {
     parts[ALU_CHAR] = this.InitTuringALU()
 
     for (let flag of FLAG_CHARS)
-        parts[flag] = [flag, '0', LAMBDA]
+        parts[flag] = [flag, '0']
 
     for (let name of REGISTER_NAMES)
         parts[name] = this.InitTuringRegister(name)
