@@ -480,14 +480,15 @@ TuringCpu.prototype.ConvertToUnsigned = function(value, bitDepth) {
 TuringCpu.prototype.UpdateView = function() {
     let showed = []
     let values = this.GetInfoValues()
+    let integer = new Integer()
 
     for (let name of Object.keys(INFO_BLOCKS_COLORS)) {
         let value = values[name]
         let id = `show-register-${name}-box`
 
         if (REGISTER_NAMES.indexOf(name) > -1) {
-            let decimal = Number.parseInt(value, 2)
-            let decimalSigned = this.ConvertToSigned(value)
+            let decimal = integer.Parse(value).ToString()
+            let decimalSigned = integer.ParseSigned(value).ToString()
             this.infoBlocks[name].valueBox.innerHTML = `bits: ${value}<br>unsigned: ${decimal}<br>signed: ${decimalSigned}`
         }
         else {
