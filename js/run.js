@@ -66,6 +66,9 @@ TuringCpu.prototype.TuringStep = function() {
             return true
         }
     }
+    else if (prevState == RUN_STATE && currState == 'FETCH' || currState == HALT) {
+        this.HighlightCurrLine()
+    }
 
     return false
 }
