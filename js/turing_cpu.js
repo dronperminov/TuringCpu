@@ -201,8 +201,8 @@ TuringCpu.prototype.InitTuringProgram = function() {
         else if (instruction.command == PUSH_CMD.name || instruction.command == POP_CMD.name) {
             program = program.concat(this.StackInstructionToProgramTape(instruction))
         }
-        else if (instruction.command == HALT_CMD.name) {
-            program.push(HALT_CMD.name)
+        else if (instruction.args.length == 0) {
+            program.push(instruction.command)
         }
         else if (instruction.args.length == 1) {
             program = program.concat(this.UnaryCommandToProgramTape(instruction))
@@ -458,16 +458,6 @@ TuringCpu.prototype.GetInfoValues = function() {
     values['curr_end'] = Math.min(end, chars.indexOf(PROGRAM_END_CHAR))
 
     return values
-}
-
-TuringCpu.prototype.ConvertToSigned = function(value) {
-    let decimal = Number.parseInt(value.substr(1), 2)
-    let bitDepth = value.length - 1
-
-    if (value.startsWith('1'))
-        decimal = -((1 << bitDepth) - decimal)
-
-    return decimal
 }
 
 TuringCpu.prototype.ConvertToUnsigned = function(value, bitDepth) {
