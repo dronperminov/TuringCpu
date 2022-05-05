@@ -24,19 +24,6 @@ body, head {
     "footer footer";
 }
 
-@media (max-width: 1000px) {
-    .simulator {
-        height: auto;
-        grid-template-columns: 100%;
-        grid-template-rows: 50px auto auto 30px;
-        grid-template-areas:
-        "left-header"
-        "code"
-        "view"
-        "footer";
-    }
-}
-
 .controls {
     grid-area: left-header;
     background: #eee;
@@ -70,4 +57,37 @@ body, head {
     grid-area: view;
     padding: 0 5px;
     overflow-y: auto;
+}
+
+@media (max-width: 1000px) {
+    .simulator {
+        height: auto;
+        grid-template-columns: 100%;
+        grid-template-rows: 50px auto auto 30px;
+        grid-template-areas:
+        "left-header"
+        "code"
+        "view"
+        "footer";
+    }
+}
+
+@media (max-width: 600px) {
+    .simulator {
+        grid-template-rows: 50px auto auto 65px;
+    }
+
+    .footer {
+        display: block;
+        padding: 5px;
+        text-align: center;
+    }
+
+    .footer-cell {
+        display: block;
+    }
+
+    .right-part {
+        position: relative;
+    }
 }

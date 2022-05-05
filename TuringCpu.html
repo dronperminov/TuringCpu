@@ -79,14 +79,18 @@ end:
         </div>
 
         <div class="footer">
-            <label>Шагать по <select id="step-type-box" class="select">
-                <option value="instructions" selected>инструкциям</option>
-                <option value="states">состояниям</option>
-                <option value="cells">ячейкам</option>
-            </select></label>
-            <label><input type="checkbox" id="show-state-box" checked>Показывать состояние</label>
+            <div class="footer-cell">
+                <label>Шагать по <select id="step-type-box" class="select">
+                    <option value="instructions" selected>инструкциям</option>
+                    <option value="states">состояниям</option>
+                    <option value="cells">ячейкам</option>
+                </select></label>
+            </div>
+            <div class="footer-cell">
+                <label><input type="checkbox" id="show-state-box" checked>Показывать состояние</label>
+            </div>
 
-            <div class="right-part">
+            <div class="footer-cell right-part">
                 Количество шагов: <span id="steps-box">0</span>
             </div>
         </div>
