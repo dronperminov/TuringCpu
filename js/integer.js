@@ -60,6 +60,7 @@ Integer.prototype.Double = function() {
 
 Integer.prototype.Parse = function(value, incrementDigit = '1') {
     this.digits = [0]
+    this.sign = ''
 
     for (let c of value) {
         this.Double()
@@ -73,13 +74,13 @@ Integer.prototype.Parse = function(value, incrementDigit = '1') {
 
 Integer.prototype.ParseSigned = function(value) {
     if (value.startsWith('1')) {
-        this.sign = '-'
         this.Parse(value.substr(1), '0')
         this.Increment()
+        this.sign = '-'
     }
     else {
-        this.sign = ''
         this.Parse(value.substr(1), '1')
+        this.sign = ''
     }
 
     return this
