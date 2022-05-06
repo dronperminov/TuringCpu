@@ -94,6 +94,7 @@ TuringCpu.prototype.DecAddress = function() {
     let decClean = {}
     let markStates = {}
     let backStates = {}
+    let error = {}
 
     moveStates['0'] = 'R'
     moveStates['1'] = 'R'
@@ -113,14 +114,18 @@ TuringCpu.prototype.DecAddress = function() {
     }
 
     markStates['#'] = `@,L,BACK-TO-ADDRESS`
+    markStates[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},N,${PROGRAM_ERROR_STATE}`
 
     backStates[PROGRAM_CHAR] = `${PROGRAM_CHAR},R,DEC-ADDRESS`
+
+    error[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},N,${HALT}`
 
     this.turing.AddState('DEC-ADDRESS', moveStates)
     this.turing.AddState('DEC-ADDRESS-2', decStates)
     this.turing.AddState('DEC-ADDRESS-CLEAN', decClean)
     this.turing.AddState('MARK-ADDRESS', markStates)
     this.turing.AddState('BACK-TO-ADDRESS', backStates)
+    this.turing.AddState(PROGRAM_ERROR_STATE, error)
 }
 
 TuringCpu.prototype.AppendToALU = function(isBinary = false) {

@@ -229,6 +229,13 @@ const WRITE_BACK_STATE = 'WRITE-BACK'
 const WRITE_RESULT_STATE = 'WRITE-RESULT'
 const UNDERFLOW_STATE = 'UNDERFLOW'
 const MEMORY_ERROR_STATE = 'MEMORY-ERROR'
+const PROGRAM_ERROR_STATE = 'PROGRAM-ERROR'
+
+const ERROR_STATES = {
+    'UNDERFLOW': 'Стек пуст!',
+    'MEMORY-ERROR': 'Адрес вышел за пределы памяти!',
+    'PROGRAM-ERROR': 'Адрес вышел за пределы программы!'
+}
 
 const FLAG_CHARS = [
     OVERFLOW_FLAG_CHAR,

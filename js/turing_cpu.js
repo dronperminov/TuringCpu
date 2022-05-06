@@ -285,7 +285,7 @@ TuringCpu.prototype.InitTuringProgramStates = function() {
 
     runState['#'] = `@,R,${FETCH_STATE}`
     runState['@'] = `R`
-    runState[PROGRAM_END_CHAR] = HALT
+    runState[PROGRAM_END_CHAR] = `${PROGRAM_END_CHAR},N,${PROGRAM_ERROR_STATE}`
 
     fixRegister['O'] = `0,R,${FIX_REGISTER_STATE}`
     fixRegister['I'] = `1,R,${FIX_REGISTER_STATE}`

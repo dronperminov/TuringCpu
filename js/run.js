@@ -33,14 +33,9 @@ TuringCpu.prototype.IsNextEnd = function() {
 }
 
 TuringCpu.prototype.CheckErrors = function() {
-    if (this.turing.state == UNDERFLOW_STATE) {
-        alert("Ошибка! Стек пуст!")
+    if (this.turing.state in ERROR_STATES) {
+        alert(`Ошибка! ${ERROR_STATES[this.turing.state]}`)
         return true
-    }
-
-    if (this.turing.state == MEMORY_ERROR_STATE) {
-        alert("Ошибка! Адрес вышел за пределы памяти!")
-        return true   
     }
 
     return false
