@@ -61,6 +61,9 @@ TuringCpu.prototype.ParseLabeledLine = function(line, lineId) {
     if (label.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) == null)
         this.CompileError(lineId, `Некорректная метка ("${label}")`)
 
+    if (REGISTER_NAMES.indexOf(label) > -1)
+        this.CompileError(lineId, `Метка не может совпадать с именем регистра ("${label}")`)
+
     this.labels[label] = this.program.length
 
     if (parts.length != 1)
@@ -99,7 +102,7 @@ TuringCpu.prototype.ParseLine = function(line, lineId) {
     if (command.args > 0)
         this.ValidateArgs(command, args, lineId)
 
-    this.program.push({ command: cmd, args: args, lineId: lineId, type: this.GetCommandType(command) })
+    this.program.push({ command: command.name, args: args, lineId: lineId, type: this.GetCommandType(command) })
 }
 
 TuringCpu.prototype.ValidateLabels = function() {
