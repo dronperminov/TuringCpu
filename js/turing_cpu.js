@@ -78,7 +78,8 @@ TuringCpu.prototype.MakeInfoBlock = function(name) {
 }
 
 TuringCpu.prototype.LabelInstructionToProgramTape = function(instruction) {
-    let address = this.ConstantToBits(instruction.args[0] + '')
+    let arg = instruction.args[0]
+    let address = IsRegister(arg) ? [arg] : this.ConstantToBits(arg + '')
     let program = [instruction.command]
 
     if (instruction.command != JMP_CMD.name)
@@ -184,7 +185,7 @@ TuringCpu.prototype.InitTuringProgram = function() {
     while ((1 << this.labelDepth) <= this.program.length)
         this.labelDepth++
 
-    this.labelDepth++
+    this.labelDepth = Math.max(this.bitDepth, this.labelDepth) + 1
 
     for (let i = 0; i < this.labelDepth; i++)
         program.push(LAMBDA)
@@ -379,25 +380,27 @@ TuringCpu.prototype.HighlightCurrLine = function() {
     lineDiv.classList.add('active-line')
 }
 
+TuringCpu.prototype.ParseConstant = function(value) {
+    if (value.startsWith('0b'))
+        return Number.parseInt(value.substr(2), 2)
+
+    if (value.endsWith('b'))
+        return Number.parseInt(value.substr(0, value.length - 1), 2)
+
+    if (value.startsWith('0o'))
+        return Number.parseInt(value.substr(2), 8)
+
+    if (value.startsWith('0x'))
+        return Number.parseInt(value.substr(2), 16)
+
+    if (value.endsWith('d'))
+        return Number.parseInt(value.substr(0, value.length - 1))
+
+    return Number.parseInt(value)
+}
+
 TuringCpu.prototype.ConstantToBits = function(value, bitDepth = -1) {
-    if (value.startsWith('0b')) {
-        value = Number.parseInt(value.substr(2), 2)
-    }
-    else if (value.endsWith('b')) {
-        value = Number.parseInt(value.substr(0, value.length - 1), 2)
-    }
-    else if (value.startsWith('0o')) {
-        value = Number.parseInt(value.substr(2), 8)
-    }
-    else if (value.startsWith('0x')) {
-        value = Number.parseInt(value.substr(2), 16)
-    }
-    else if (value.endsWith('d')) {
-        value = Number.parseInt(value.substr(0, value.length - 1))
-    }
-    else {
-        value = Number.parseInt(value)
-    }
+    value = this.ParseConstant(value)
 
     let bits = []
 

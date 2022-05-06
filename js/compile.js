@@ -8,6 +8,7 @@ TuringCpu.prototype.ClearLine = function(line) {
 TuringCpu.prototype.CompileError = function(lineId, error) {
     let line = document.getElementById(lineId)
     line.classList.add('error-line')
+    this.program = []
     throw error
 }
 
@@ -108,10 +109,27 @@ TuringCpu.prototype.ValidateLabels = function() {
 
         let label = instruction.args[0]
 
-        if (!(label in this.labels))
-            this.CompileError(instruction.lineId, `Метка "${label}" не обнаружена`)
+        if (label in this.labels) {
+            instruction.args[0] = this.labels[label]
+        }
+        else if (IsConstant(label)) {
+            let address = this.ParseConstant(label)
 
-        instruction.args[0] = this.labels[label]
+            if (address < 0) {
+                this.CompileError(instruction.lineId, `Адрес "${label}" не может быть отрицательным`)
+            }
+            else if (address > this.program.length) {
+                this.CompileError(instruction.lineId, `Адрес "${label}" выходит за пределы программы`)
+            }
+
+            instruction.args[0] = address
+        }
+        else if (REGISTER_NAMES.indexOf(label) > -1) {
+            instruction.args[0] = label
+        }
+        else {
+            this.CompileError(instruction.lineId, `Метка "${label}" не обнаружена`)
+        }
     }
 }
 

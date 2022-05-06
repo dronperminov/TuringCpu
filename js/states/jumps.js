@@ -113,6 +113,10 @@ TuringCpu.prototype.Jump = function() {
     states['1'] = `I,L,${JMP_CMD.name}-COPY-1-ADDRESS`
     states[LAMBDA] = `${LAMBDA},L,${JMP_CMD.name}-MOVE-ADDRESS`
 
+    for (let register of REGISTER_NAMES) {
+        this.GoToRegisterAction(`${JMP_CMD.name}-COPY-${register}-ADDRESS`, register, `${JMP_CMD.name}`)
+        states[register] = `${register},R,${JMP_CMD.name}-COPY-${register}-ADDRESS`
+    }
 
     for (let char of TURING_ALPHABET) {
         backStates[char] = char == 'O' || char == 'I' ? `${char},R,${JMP_CMD.name}` : 'R'

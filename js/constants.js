@@ -181,7 +181,7 @@ function IsAddress(arg) {
 }
 
 function IsLabel(arg) {
-    return arg.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) != null
+    return arg.match(new RegExp(`^${LABEL_REGEXP}$`, "g")) != null || IsConstant(arg) || IsRegister(arg)
 }
 
 function GetArgType(arg) {
