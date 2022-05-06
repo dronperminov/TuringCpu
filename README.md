@@ -182,3 +182,4 @@ fibonacci:
 ![Пример 1](examples/example1.png "Пример 1")
 ![Пример 2](examples/example2.png "Пример 2")
 ![Пример 3](examples/example3.png "Пример 3")
+![Пример 4](examples/example4.png "Пример 4")
