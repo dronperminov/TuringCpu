@@ -268,3 +268,14 @@ TuringMachine.prototype.ShowAllStates = function() {
         if (!visited[state])
             console.log(state)
 }
+
+TuringMachine.prototype.ShowInfo = function() {
+    let operations = 0
+
+    for (let state of Object.keys(this.states))
+        operations += Object.keys(this.states[state]).length
+
+    console.log('Alphabet:', this.alphabet.size)
+    console.log('States:', Object.keys(this.states).length)
+    console.log('Operations:', operations)
+}
